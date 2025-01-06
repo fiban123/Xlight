@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "iostream": "cpp",
+        "vector": "cpp",
+        "ostream": "cpp",
+        "numeric": "cpp",
+        "iomanip": "cpp",
+        "array": "cpp",
+        "*.dlg": "cpp",
+        "*.idl": "cpp",
+        "chrono": "cpp",
+        "thread": "cpp"
+    },
+    "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, BreakBeforeBraces: Attach, ColumnLimit: 200}",
+    "git.useForcePushIfIncludes": false,
+    "C_Cpp.autocompleteAddParentheses": true
+}
