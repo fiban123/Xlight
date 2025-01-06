@@ -107,7 +107,7 @@ static int callback( // the audio callback function
             magnitude = sqrt(spectrogram[i] * spectrogram[i] + spectrogram[FRAMES_PER_FFT - i] * spectrogram[FRAMES_PER_FFT - i]);
         }
 
-        magnitude *= (1.0f / linear_master_volume);
+        magnitude *= (1.0f / linear_master_volume) * MAGNITUDE_FACTOR;
 
         normalized_magnitudes[i - start_bin_index] = magnitude;
     }

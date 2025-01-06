@@ -18,41 +18,77 @@ void init_portaudio() { // initialize portaudio
 
     int num_devices = Pa_GetDeviceCount();
 
+    cout << num_devices << endl;
+
+    debug_mode = false;
+    if (debug_mode){
+        device = DEVICE_ID;
+        sample_rate = SAMPLE_RATE;
+    }
+    else{
+        // list all devices, along with the default
+        for (int i = 0; i < num_devices; i++){
+            print_device_info(i);
+        }
+        cout << "default input device: " << Pa_GetDefaultInputDevice() << endl;
+        cout << "select a device" << endl;
+        string device_str;
+
+        cin >> device_str;
+
+        device = stoi(device_str);
+    }
+
     CHECKSIGN(num_devices);
     CHECKZERO(num_devices);
 
-    //for (int i = 0; i < num_devices; i++){
-        //print_device_info(i);
-    //}
-
-    print_device_info(DEVICE_ID);
+    print_device_info(device);
 }
 
 void init_stream() { // inizalize stream & stream properties
     const PaDeviceInfo* info;
 
-    info = Pa_GetDeviceInfo(DEVICE_ID);
+    info = Pa_GetDeviceInfo(device);
 
     PaStreamParameters in_params;
 
     memset(&in_params, 0, sizeof(in_params));
 
     in_params.channelCount = 1;
-    in_params.device = DEVICE_ID;
+    in_params.device = device;
     in_params.hostApiSpecificStreamInfo = NULL;
     in_params.sampleFormat = paFloat32;
     in_params.suggestedLatency = info->defaultLowInputLatency;
 
-    err = Pa_OpenStream(
-        &stream,
-        &in_params,
-        NULL,
-        SAMPLE_RATE,
-        FRAMES_PER_BUFFER,
-        paNoFlag,
-        callback,
-        NULL
-    );
+    sample_rate = info->defaultSampleRate;
+    latency = info->defaultLowInputLatency;
+
+
+    if (debug_mode){
+        err = Pa_OpenStream(
+            &stream,
+            &in_params,
+            NULL,
+            SAMPLE_RATE,
+            FRAMES_PER_BUFFER,
+            paNoFlag,
+            callback,
+            NULL
+        );
+    }
+    else{
+        err = Pa_OpenStream(
+            &stream,
+            &in_params,
+            NULL,
+            sample_rate,
+            FRAMES_PER_BUFFER,
+            paClipOff,
+            callback,
+            NULL
+        );
+    }
+
     CHECKERR(err);
 }
 

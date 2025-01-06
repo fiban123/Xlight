@@ -1,6 +1,12 @@
 PaError err;
 PaStream* stream;
 
+unsigned int device;
+unsigned int sample_rate;
+float latency;
+bool debug_mode;
+
+
 void init_portaudio();
 
 void init_stream();

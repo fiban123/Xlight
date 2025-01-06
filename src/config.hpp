@@ -2,14 +2,16 @@
 // audio & FFT
 #define DEVICE_ID 15
 
-#define FRAMES_PER_BUFFER   512
-#define FRAMES_PER_FFT      4096
-#define SAMPLE_RATE         192000.0f
+#define FRAMES_PER_BUFFER   256
+#define FRAMES_PER_FFT      1024
+#define SAMPLE_RATE         44100.0f
 #define FREQ_LOWER_BOUND    18.0f
 #define FREQ_UPPER_BOUND    22000.0f
 
+#define MAGNITUDE_FACTOR 4.44f
 // raylib & gui
 #define MAX_AMPLITUDE 1000
+
 
 #define SCREEN_WIDTH    1920
 #define SCREEN_HEIGHT   1080
