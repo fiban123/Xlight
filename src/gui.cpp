@@ -2,7 +2,7 @@ inline unsigned int get_bin(float freq){
     return freq / sample_ratio;
 }
 
-float nmap(float value, float start1, float stop1, float start2, float stop2){
+constexpr inline float nmap(float value, float start1, float stop1, float start2, float stop2){
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
 
@@ -25,8 +25,8 @@ void init_gui(){
     max_normalized_amplitude = normalize_frequency(actual_end_freq);
     min_normalized_amplitude = normalize_frequency(actual_start_freq);
 
-    max_latency_ms = 1 / (SAMPLE_RATE / FRAMES_PER_FFT) * 1000;
-    FFT_rate = SAMPLE_RATE / FRAMES_PER_BUFFER;
+    max_latency_ms = 1 / (sample_rate / FRAMES_PER_FFT) * 1000;
+    FFT_rate = sample_rate / FRAMES_PER_BUFFER;
 
     graph_points = vector<rl::Vector2>(n_bins + 1);
 

@@ -76,6 +76,7 @@ void SpectrumAlgo::execute(array<Channel, N_CHANNELS>* base_channels, array<Chan
     transform_algo(base_channels, transformed_channels, magnitudes);
 }
 
+
 void init_algo() {
     algo = make_unique<ALGO>();
 }

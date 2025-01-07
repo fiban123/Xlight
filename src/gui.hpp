@@ -6,7 +6,7 @@ void stop_gui();
 
 inline unsigned int get_bin(float freq);
 
-inline float nmap(float value, float start1, float stop1, float start2, float stop2);
+constexpr inline float nmap(float value, float start1, float stop1, float start2, float stop2);
 
 inline float nthroot(float x, float root);
 

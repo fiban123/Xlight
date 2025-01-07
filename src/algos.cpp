@@ -1,3 +1,5 @@
+// helper functions
+
 constexpr inline float smoothstep(float edge0, float edge1, float x) {
     // Clamp x to the range [0, 1]
     x = clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
@@ -16,15 +18,24 @@ constexpr inline float smoothstep2(float edge0_0, float edge1_0, float edge0_1, 
     return smoothstep(edge0_1, edge1_1, x);
 }
 
-constexpr inline unsigned int get_magnitude_bin(float freq){
+const inline unsigned int get_magnitude_bin(float freq){
     return freq / sample_ratio + start_bin_index;
 }
+
+constexpr inline float get_spiked_brightness(float spiked_brightness, const float base_brightness, const float prev_base_brightness, const float decay){
+    float brightness_derivative = max(0.0f, base_brightness - prev_base_brightness);
+    spiked_brightness += nmap(sqrtf(brightness_derivative), 0.0f, 15.96f, 0.0f, 255.0f);
+    spiked_brightness -= decay;
+    return clamp(spiked_brightness, 0.0f, 255.0f);
+}
+
+// algorithms
 
 void Algo_FBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes) {
     // C0 -> bass, static hue
     // C1 -> mids, dominant frequency based hue determination
     // C2 -> highs, dominant frequency based hue determination
-    // C3 -> positive rate of change in volume
+    // C3 -> spiked total volume
 
     // C0, sum up all bass magnitudes
     float bass_sum = 0.0f;
@@ -33,9 +44,11 @@ void Algo_FBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<floa
 
         bass_sum += smoothstep(FBGM_BASS_G2_END, FBGM_BASS_G2_START, freq) * magnitudes->at(i);
     }
-    base_channels->at(0).col.r = (uint8_t)clamp(bass_sum / 10, 0.0f, 255.0f);
+    base_channels->at(0).col.r = (uint8_t)clamp(bass_sum / FBGM_BASS_FACTOR, 0.0f, 255.0f);
 
-    // C1, sum up all magnitudes, calculate dominant frequency
+
+
+    // C1, sum up all mids magnitudes, calculate dominant frequency
     float mids_sum = 0.0f;
     float mids_weighted_frequency_sum = 0.0f;
     float mids_weight_sum = 0.0f;
@@ -45,23 +58,29 @@ void Algo_FBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<floa
 
         mids_sum += smoothstep2(FBGM_MIDS_G1_START, FBGM_MIDS_G1_END, FBGM_MIDS_G2_START, FBGM_MIDS_G2_END, freq) * magnitudes->at(i);
 
-        mids_weighted_frequency_sum += /*smoothstep(FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_G1_END, freq) * */ freq * (pow(magnitudes->at(i), 2) / 100);
-        mids_weight_sum += (pow(magnitudes->at(i), 2) / 100);
+        mids_weighted_frequency_sum += /*smoothstep(FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_G1_END, freq) * */ freq * (pow(magnitudes->at(i), 2) / FBGM_MIDS_FLAOT_OVERFLOW_FACTOR); // square this to suppress noise
+        mids_weight_sum += (pow(magnitudes->at(i), 2) / FBGM_MIDS_FLAOT_OVERFLOW_FACTOR);
     }
 
+    // normalize dominant frequency
 
     float mids_dominant_frequency = mids_weighted_frequency_sum / mids_weight_sum;
 
-
-    float normalized_mids_sum = mids_sum / 30.0f;
+    float normalized_mids_sum = mids_sum / FBGM_MIDS_FACTOR;
     float mids_normalized_dominant_frequency = mids_dominant_frequency - FBGM_MIDS_HD_G1_START;
-    mids_normalized_dominant_frequency = sqrt(mids_normalized_dominant_frequency);
+    mids_normalized_dominant_frequency = sqrtf(mids_normalized_dominant_frequency);
     mids_normalized_dominant_frequency = nmap(mids_normalized_dominant_frequency, 0.0f, sqrt(FBGM_MIDS_HD_END - FBGM_MIDS_HD_G1_START), 0.0f, 360.0f);
 
-    base_channels->at(1).col.r = (uint8_t)clamp(normalized_mids_sum, 0.0f, 255.0f);
+    // base brightness is defined by amplitude / volume, hue is defined by the dominant frequency.
+    float mids_brightness = clamp(normalized_mids_sum, 0.0f, 255.0f);
+
+    base_channels->at(1).col.r = (uint8_t) mids_brightness;
     base_channels->at(1).col.g = (uint8_t)0;
     base_channels->at(1).col.b = (uint8_t)0;
+    // hue is shifted by the normalized dominant frequency.
     base_channels->at(1).col.shift_hue(mids_normalized_dominant_frequency);
+
+
 
     // C2, sum up all magnitudes
     float highs_sum = 0.0f;
@@ -73,24 +92,18 @@ void Algo_FBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<floa
         
         highs_sum += smoothstep(FBGM_HIGHS_G1_START, FBGM_HIGHS_G1_END, freq) * magnitudes->at(i);
 
-        highs_weighted_frequency_sum += freq * (pow(magnitudes->at(i), 2) / 30);
-        highs_weight_sum += (pow(magnitudes->at(i), 2) / 30);
+        highs_weighted_frequency_sum += freq * (pow(magnitudes->at(i), 2) / FBGM_HIGHS_FLOAT_OVERFLOW_FACTOR);
+        highs_weight_sum += (pow(magnitudes->at(i), 2) / FBGM_HIGHS_FLOAT_OVERFLOW_FACTOR);
     }
 
     float highs_dominant_frequency = highs_weighted_frequency_sum / highs_weight_sum;
 
-    lines = {mids_dominant_frequency, highs_dominant_frequency, FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_END, FBGM_HIGHS_HD_START, FBGM_HIGHS_HD_END};
-
-    float normalized_highs_sum = highs_sum / 60.0f;
+    float normalized_highs_sum = highs_sum / FBGM_HIGHS_FACTOR;
     float highs_normalized_dominant_frequency = highs_dominant_frequency - FBGM_HIGHS_HD_START;
     highs_normalized_dominant_frequency = sqrt(highs_normalized_dominant_frequency);
     highs_normalized_dominant_frequency = nmap(highs_normalized_dominant_frequency, 0.0f, sqrt(FBGM_HIGHS_HD_END - FBGM_HIGHS_HD_START), 0.0f, 360.0f);
 
-    //float c2_amp_pdelta = clamp((normalized_highs_sum / base_channels->at(2).prev_amp - 1.0f) * 255.0f, 1.0f, 255.0f); // rate of positive change in c1_amp
-
-    //cout << c2_amp_pdelta << endl;
-
-    //float c2_amp = normalized_highs_sum * 0.7f + c2_amp_pdelta * 0.3f;
+    lines = {mids_dominant_frequency, highs_dominant_frequency, FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_END, FBGM_HIGHS_HD_START, FBGM_HIGHS_HD_END};
 
     base_channels->at(2).col.r = (uint8_t)clamp(normalized_highs_sum, 0.0f, 255.0f);
     base_channels->at(2).col.g = (uint8_t)0;
@@ -100,6 +113,105 @@ void Algo_FBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<floa
     //base_channels->at(2).prev_amp = normalized_highs_sum;
 }
 
-void Algo_FBGM::transform_algo(array<Channel, N_CHANNELS>* base_channels, array<Channel, N_CHANNELS>* transformed_channels, vector<float>* magnitudes) {
 
+
+
+void Algo_SFBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes) {
+    // C0 -> spiked bass, static hue
+    // C1 -> spiked mids, dominant frequency based hue determination
+    // C2 -> spiked highs, dominant frequency based hue determination
+    // C3 -> spiked total volume (=FBGM)
+
+    // C0, sum up all bass magnitudes
+    float bass_sum = 0.0f;
+    for (unsigned int i = get_magnitude_bin(FBGM_BASS_START); i < get_magnitude_bin(FBGM_BASS_G2_START); i++){
+        float freq = i * sample_ratio;
+
+        bass_sum += smoothstep(FBGM_BASS_G2_END, FBGM_BASS_G2_START, freq) * magnitudes->at(i);
+    }
+    float normalized_bass_sum = bass_sum / FBGM_BASS_FACTOR;
+    float bass_base_brightness = clamp(normalized_bass_sum, 0.0f, 255.0f);
+
+    bass_spiked_brightness = get_spiked_brightness(bass_spiked_brightness, bass_base_brightness, prev_bass_base_brightness, SFBGM_BASS_SPIKE_DECAY_FACTOR);
+    prev_bass_base_brightness = bass_base_brightness;
+
+    uint8_t bass_combined_brightness = (uint8_t)clamp(bass_base_brightness * 0.7f + bass_spiked_brightness * 0.3f, 0.0f, 255.0f);
+    
+    base_channels->at(0).col.r = bass_combined_brightness;
+
+    // C1, sum up all mids magnitudes, calculate dominant frequency
+    float mids_sum = 0.0f;
+    float mids_weighted_frequency_sum = 0.0f;
+    float mids_weight_sum = 0.0f;
+
+    for (unsigned int i = get_magnitude_bin(FBGM_MIDS_G1_START); i < get_magnitude_bin(FBGM_MIDS_G2_END); i++){
+        float freq = i * sample_ratio;
+
+        mids_sum += smoothstep2(FBGM_MIDS_G1_START, FBGM_MIDS_G1_END, FBGM_MIDS_G2_START, FBGM_MIDS_G2_END, freq) * magnitudes->at(i);
+
+        // magnitudfe is squread to suppress noise
+        mids_weighted_frequency_sum += /*smoothstep(FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_G1_END, freq) * */ freq * (pow(magnitudes->at(i), 2) / FBGM_MIDS_FLAOT_OVERFLOW_FACTOR);
+        mids_weight_sum += (pow(magnitudes->at(i), 2) / FBGM_MIDS_FLAOT_OVERFLOW_FACTOR);
+    }
+
+    // normalize dominant frequency
+
+    float mids_dominant_frequency = mids_weighted_frequency_sum / mids_weight_sum;
+
+    float normalized_mids_sum = mids_sum / FBGM_MIDS_FACTOR;
+    float mids_normalized_dominant_frequency = mids_dominant_frequency - FBGM_MIDS_HD_G1_START;
+    mids_normalized_dominant_frequency = sqrtf(mids_normalized_dominant_frequency);
+    mids_normalized_dominant_frequency = nmap(mids_normalized_dominant_frequency, 0.0f, sqrt(FBGM_MIDS_HD_END - FBGM_MIDS_HD_G1_START), 0.0f, 360.0f);
+
+    // base brightness is defined by amplitude / volume, hue is defined by the dominant frequency.
+    float mids_base_brightness = clamp(normalized_mids_sum, 0.0f, 255.0f);
+
+    mids_spiked_brightness = get_spiked_brightness(mids_spiked_brightness, mids_base_brightness, prev_mids_base_brightness, SFBGM_MIDS_SPIKE_DECAY_FACTOR);
+    prev_mids_base_brightness = mids_base_brightness;
+
+    uint8_t mids_combined_brightness = (uint8_t)clamp(mids_base_brightness * 0.7f + mids_spiked_brightness * 0.3f, 0.0f, 255.0f);
+
+    base_channels->at(1).col.r = (uint8_t) mids_combined_brightness;
+    base_channels->at(1).col.g = (uint8_t) 0;
+    base_channels->at(1).col.b = (uint8_t) 0;
+    // hue is shifted by the normalized dominant frequency.
+    base_channels->at(1).col.shift_hue(mids_normalized_dominant_frequency);
+
+
+
+    // C2, sum up all magnitudes
+    float highs_sum = 0.0f;
+    float highs_weighted_frequency_sum = 0.0f;
+    float highs_weight_sum = 0.0f;
+    
+    for (unsigned int i = get_magnitude_bin(FBGM_HIGHS_G1_START); i < get_magnitude_bin(FBGM_HIGHS_END); i++){
+        float freq = i * sample_ratio;
+        
+        highs_sum += smoothstep(FBGM_HIGHS_G1_START, FBGM_HIGHS_G1_END, freq) * magnitudes->at(i);
+
+        highs_weighted_frequency_sum += freq * (pow(magnitudes->at(i), 2) / FBGM_HIGHS_FLOAT_OVERFLOW_FACTOR);
+        highs_weight_sum += (pow(magnitudes->at(i), 2) / FBGM_HIGHS_FLOAT_OVERFLOW_FACTOR);
+    }
+
+    float highs_dominant_frequency = highs_weighted_frequency_sum / highs_weight_sum;
+
+    float normalized_highs_sum = highs_sum / FBGM_HIGHS_FACTOR;
+    float highs_normalized_dominant_frequency = highs_dominant_frequency - FBGM_HIGHS_HD_START;
+    highs_normalized_dominant_frequency = sqrt(highs_normalized_dominant_frequency);
+    highs_normalized_dominant_frequency = nmap(highs_normalized_dominant_frequency, 0.0f, sqrt(FBGM_HIGHS_HD_END - FBGM_HIGHS_HD_START), 0.0f, 360.0f);
+
+    float highs_base_brightness = clamp(normalized_highs_sum, 0.0f, 255.0f);
+
+    highs_spiked_brightness = get_spiked_brightness(highs_spiked_brightness, highs_base_brightness, prev_highs_base_brightness, SFBGM_HIGHS_SPIKE_DECAY_FACTOR);
+    prev_highs_base_brightness = highs_base_brightness;
+
+    uint8_t highs_combined_brightness = (uint8_t)clamp(highs_base_brightness * 0.7f + highs_spiked_brightness * 0.3f, 0.0f, 255.0f);
+
+    base_channels->at(2).col.r = highs_combined_brightness;
+    base_channels->at(2).col.g = (uint8_t)0;
+    base_channels->at(2).col.b = (uint8_t)0;
+    base_channels->at(2).col.shift_hue(highs_normalized_dominant_frequency);
+
+
+    lines = {mids_dominant_frequency, highs_dominant_frequency, FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_END, FBGM_HIGHS_HD_START, FBGM_HIGHS_HD_END};
 }

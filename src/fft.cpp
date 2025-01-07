@@ -1,6 +1,6 @@
 
 void init_fft(){ // initialize the FFT properties & plan
-    sample_ratio = (float)(SAMPLE_RATE / (double) FRAMES_PER_FFT);
+    sample_ratio = (float)(sample_rate / (double) FRAMES_PER_FFT);
 
     start_bin_index = get_bin(FREQ_LOWER_BOUND);
     end_bin_index = get_bin(FREQ_UPPER_BOUND);
@@ -22,7 +22,7 @@ void terminate_fft() { // frees memory allocated to FFT plan
     fftwf_destroy_plan(plan);
 }
 
-// code not made by me. returns the master volume
+// code not made by me. returns the master volume. have no idea how it works but it works and this is the easiest way to do it.
 float get_master_volume(){
     float masterVolume = 0.0f;
 
@@ -100,7 +100,7 @@ static int callback( // the audio callback function
     // calculate normalized magnitudes
     for (unsigned int i = start_bin_index; i < end_bin_index; i++){
         float magnitude;
-        if (i == 0 || i == FRAMES_PER_BUFFER / 2){
+        if (i == 0 || i == FRAMES_PER_FFT / 2){ // nyquist frequency or 0hz frequency have no complex part.
             magnitude = fabs(spectrogram[i]);
         }
         else{
@@ -116,6 +116,7 @@ static int callback( // the audio callback function
 
     // get master volume every 10 frames
     if (frame_count % 10 == 0){
+        // windows volume isnt linear :(, so we have to normalize it.
         linear_master_volume = pow(get_master_volume(), 1.7f);
     }
     frame_count++;

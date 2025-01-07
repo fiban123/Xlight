@@ -25,16 +25,36 @@ class SpectrumAlgo{ // abstract class
 
         virtual void transform_algo(array<Channel, N_CHANNELS>* base_channels, array<Channel, N_CHANNELS>* transformed_channels, vector<float>* magnitudes) = 0;
 
+        virtual void init() = 0;
+
         void execute(array<Channel, N_CHANNELS>* base_channels, array<Channel, N_CHANNELS>* transformed_channels, vector<float>* magnitudes);
 };
 
 struct Algo_FBGM : public SpectrumAlgo{
     public:
-        float previous_vol = 0.0f;
+        virtual void base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes);
+
+        virtual void transform_algo(array<Channel, N_CHANNELS>* base_channels, array<Channel, N_CHANNELS>* transformed_channels, vector<float>* magnitudes){};
+
+        virtual void init(){};
+};
+
+struct Algo_SFBGM : public SpectrumAlgo{
+    public:
+        float prev_bass_base_brightness = 0.0f; // previous base brightness value
+        float bass_spiked_brightness = 0.0f; // affected by rate of positive change in base brightness and spike decay value
+
+        float prev_mids_base_brightness = 0.0f;
+        float mids_spiked_brightness = 0.0f;
+
+        float prev_highs_base_brightness = 0.0f;
+        float highs_spiked_brightness = 0.0f;
 
         virtual void base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes);
 
-        virtual void transform_algo(array<Channel, N_CHANNELS>* base_channels, array<Channel, N_CHANNELS>* transformed_channels, vector<float>* magnitudes);
+        virtual void transform_algo(array<Channel, N_CHANNELS>* base_channels, array<Channel, N_CHANNELS>* transformed_channels, vector<float>* magnitudes){};
+
+        virtual void init(){};
 };
 
 unique_ptr<SpectrumAlgo> algo;
