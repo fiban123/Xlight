@@ -29,6 +29,47 @@ constexpr inline float get_spiked_brightness(float spiked_brightness, const floa
     return clamp(spiked_brightness, 0.0f, 255.0f);
 }
 
+constexpr inline float clerp(float edge0, float edge1, float x) {
+    return clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+}
+
+inline constexpr float clerp2(float edge0, float edge1, float edge2, float edge3, float x) {
+    if (x < edge0 || x > edge3){
+        return 0.0f;
+    } else if (x > edge1 && x < edge2){
+        return 1.0f;
+    } else if (x > edge0 && x < edge1){
+        return clerp(edge0, edge1, x);
+    }
+    return clerp(edge3, edge2, x);
+}
+
+inline float get_division_sum(float center, float in_len, float out_len, vector<float>* magnitudes){
+    float sum = 0.0f;
+
+    for (unsigned int i = get_magnitude_bin(center - in_len); i < get_magnitude_bin(center + out_len); i++){
+        float freq = i * sample_ratio;
+
+        float weight = clerp2(center - in_len, center, center, center + out_len, freq);
+
+        sum += weight * magnitudes->at(i);
+    }
+
+    return sum;
+}
+
+inline float get_bin_sum(const float start, const float end, vector<float>* magnitudes){
+    float sum = 0.0f;
+    
+    for (unsigned int i = get_magnitude_bin(start); i < get_magnitude_bin(end); i++){
+        float freq = i * sample_ratio;
+
+        sum += magnitudes->at(i);
+    }
+
+    return sum;
+}
+
 // algorithms
 
 void Algo_FBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes) {
@@ -152,6 +193,7 @@ void Algo_SFBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<flo
         // magnitudfe is squread to suppress noise
         mids_weighted_frequency_sum += /*smoothstep(FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_G1_END, freq) * */ freq * (pow(magnitudes->at(i), 2) / FBGM_MIDS_FLAOT_OVERFLOW_FACTOR);
         mids_weight_sum += (pow(magnitudes->at(i), 2) / FBGM_MIDS_FLAOT_OVERFLOW_FACTOR);
+
     }
 
     // normalize dominant frequency
@@ -214,4 +256,35 @@ void Algo_SFBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<flo
 
 
     lines = {mids_dominant_frequency, highs_dominant_frequency, FBGM_MIDS_HD_G1_START, FBGM_MIDS_HD_END, FBGM_HIGHS_HD_START, FBGM_HIGHS_HD_END};
+}
+
+void Algo_FBDGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes) {
+
+    // mids (channel 1)
+    float mids_d1_sum = get_division_sum(FBDGM_MIDS_D1, 0.0f, FBDGM_MIDS_D1_OUT_LEN, magnitudes);
+    float mids_d2_sum = get_division_sum(FBDGM_MIDS_D2, FBDGM_MIDS_D2_IN_LEN, FBDGM_MIDS_D2_OUT_LEN, magnitudes);
+    float mids_d3_sum = get_division_sum(FBDGM_MIDS_D3, FBDGM_MIDS_D3_IN_LEN, FBDGM_MIDS_D3_OUT_LEN, magnitudes);
+
+    base_channels->at(1).col.r = (uint8_t)clamp(mids_d1_sum / FBDGM_MIDS_D1_FACTOR, 0.0f, 255.0f);
+    base_channels->at(1).col.g = (uint8_t)clamp(mids_d2_sum / FBDGM_MIDS_D2_FACTOR, 0.0f, 255.0f);
+    base_channels->at(1).col.b = (uint8_t)clamp(mids_d3_sum / FBDGM_MIDS_D3_FACTOR, 0.0f, 255.0f);
+
+    // highs (channel 2)
+    float highs_d1_sum = get_division_sum(FBDGM_HIGHS_D1, FBDGM_HIGHS_D1_IN_LEN, FBDGM_HIGHS_D1_OUT_LEN, magnitudes);
+    float highs_d2_sum = get_division_sum(FBDGM_HIGHS_D2, FBDGM_MIDS_D2_IN_LEN, FBDGM_HIGHS_D2_OUT_LEN, magnitudes);
+    float highs_d3_sum = get_division_sum(FBDGM_HIGHS_D3, FBDGM_MIDS_D3_IN_LEN, 0.0f, magnitudes);
+
+    base_channels->at(2).col.r = (uint8_t)clamp(highs_d1_sum / FBDGM_HIGHS_D1_FACTOR, 0.0f, 255.0f);
+    base_channels->at(2).col.g = (uint8_t)clamp(highs_d2_sum / FBDGM_HIGHS_D2_FACTOR, 0.0f, 255.0f);
+    base_channels->at(2).col.b = (uint8_t)clamp(highs_d3_sum / FBDGM_HIGHS_D3_FACTOR, 0.0f, 255.0f);
+
+    // bass (channel 0)
+    float bass_sum = get_bin_sum(FBDGM_BASS_START, FBDGM_BASS_END, magnitudes) / FBDGM_BASS_FACTOR;
+
+    base_channels->at(0).col.r = (uint8_t)clamp(bass_sum, 0.0f, 255.0f);
+    base_channels->at(0).col.g = (uint8_t)clamp(bass_sum - 255.0f, 0.0f, 255.0f);
+    base_channels->at(0).col.b = (uint8_t)clamp(bass_sum - 255.0f * 2.0f, 0.0f, 255.0f);
+
+
+    lines = {FBDGM_MIDS_D1, FBDGM_MIDS_D2, FBDGM_MIDS_D3, FBDGM_HIGHS_D1, FBDGM_HIGHS_D2, FBDGM_HIGHS_D3};
 }

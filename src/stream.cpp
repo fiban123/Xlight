@@ -25,6 +25,13 @@ void init_portaudio() { // initialize portaudio
     
     device = DEFAULT_DEVICE_ID;
 
+    #ifdef PRINT_ALL_DEVICES
+    for (int i = 0; i < num_devices; i++){
+        print_device_info(i);
+    }
+    #endif
+
+
     print_device_info(device);
 }
 

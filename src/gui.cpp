@@ -25,7 +25,7 @@ void init_gui(){
     max_normalized_amplitude = normalize_frequency(actual_end_freq);
     min_normalized_amplitude = normalize_frequency(actual_start_freq);
 
-    max_latency_ms = 1 / (sample_rate / FRAMES_PER_FFT) * 1000;
+    max_latency_ms = 1.0f / (sample_rate / FRAMES_PER_FFT) * 1000.0f    ;
     FFT_rate = sample_rate / FRAMES_PER_BUFFER;
 
     graph_points = vector<rl::Vector2>(n_bins + 1);

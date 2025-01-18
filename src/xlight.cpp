@@ -7,11 +7,11 @@ int main(){
 
     init_stream();
 
-    init_algo();
-
     init_fft();
 
     init_gui();
+
+    init_algo();
 
     start_stream();
     
