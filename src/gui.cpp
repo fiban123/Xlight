@@ -145,9 +145,6 @@ void execute_gui(){
         rl::DrawText(to_string(cursor_frequency).c_str(), top_right.x - 200, top_right.y, 40, rl::WHITE);
 
 
-        // draw graph
-        rl::DrawSplineLinear(graph_points.data(), graph_points.size(), 1.0f, rl::RED);
-
         for (size_t i = 0; i < lines.size(); i++){
                 float normalized_frequency = normalize_frequency(lines[i]);
     
@@ -155,6 +152,9 @@ void execute_gui(){
 
                 rl::DrawLine(x, 0, x, SCREEN_HEIGHT, rl::BLUE);
         }
+        // draw graph
+        rl::DrawSplineLinear(graph_points.data(), graph_points.size(), 2.0f, rl::RED);
+
 
         rl::EndDrawing();
     }

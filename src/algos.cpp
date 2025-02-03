@@ -19,7 +19,7 @@ constexpr inline float smoothstep2(float edge0_0, float edge1_0, float edge0_1, 
 }
 
 const inline unsigned int get_magnitude_bin(float freq){
-    return freq / sample_ratio + start_bin_index;
+    return freq / sample_ratio + (float) start_bin_index;
 }
 
 constexpr inline float get_spiked_brightness(float spiked_brightness, const float base_brightness, const float prev_base_brightness, const float decay){

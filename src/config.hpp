@@ -7,11 +7,11 @@
 #define OVERRIDE_SAMPLE_RATE 44100.0f
 
 #define FRAMES_PER_BUFFER   128
-#define FRAMES_PER_FFT      1024
+#define FRAMES_PER_FFT      2048
 #define FREQ_LOWER_BOUND    18.0f
 #define FREQ_UPPER_BOUND    22000.0f
 
-#define MAGNITUDE_FACTOR 4.44f
+#define MAGNITUDE_FACTOR 1.35f
 
 
 // raylib & gui
@@ -69,11 +69,11 @@
 #define FBDGM_BASS_END 200.0f
 
 #define FBDGM_MIDS_D1 FBDGM_BASS_END
-#define FBDGM_MIDS_D2 1700.0f
+#define FBDGM_MIDS_D2 1300.0f
 #define FBDGM_MIDS_D3 4500.0f
 
-#define FBDGM_HIGHS_D1 8000.0f
-#define FBDGM_HIGHS_D2 14000.0f
+#define FBDGM_HIGHS_D1 5500.0f
+#define FBDGM_HIGHS_D2 12000.0f
 #define FBDGM_HIGHS_D3 22000.0f
 
 
