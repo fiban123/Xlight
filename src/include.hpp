@@ -31,7 +31,7 @@ namespace windows{
     #include <endpointvolume.h>
 }
 
-using namespace std;
+using namespace std;;
 
 #define CHECKERR(err) if (err != paNoError){ cout << "PA error: " << Pa_GetErrorText(err) << endl; exit(1);}
 #define CHECKSIGN(x) if (x < 0){ cout << "Sign Error" << endl; exit(1); }
