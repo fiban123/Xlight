@@ -118,10 +118,10 @@ static int callback( // the audio callback function
     // get master volume every 10 frames
     if (frame_count % 10 == 0){
         // windows volume isnt linear :(, so we have to normalize it.
-        linear_master_volume = pow(get_master_volume(), 0.2f);
+        linear_master_volume = pow(get_master_volume(), AUDIO_EXP);
         // laptop: 0.2f
         // pc: 1.7f
-        cout << get_master_volume() << " " << linear_master_volume << endl;
+        //cout << get_master_volume() << " " << linear_master_volume << endl;
     }
     frame_count++;
 
