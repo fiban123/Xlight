@@ -278,12 +278,14 @@ void Algo_FBDGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<flo
     base_channels->at(2).col.g = (uint8_t)clamp(highs_d2_sum / FBDGM_HIGHS_D2_FACTOR, 0.0f, 255.0f);
     base_channels->at(2).col.b = (uint8_t)clamp(highs_d3_sum / FBDGM_HIGHS_D3_FACTOR, 0.0f, 255.0f);
 
-    // bass (channel 0)
-    float bass_sum = get_bin_sum(FBDGM_BASS_START, FBDGM_BASS_END, magnitudes) / FBDGM_BASS_FACTOR;
+    // bass
+    float bass_d1_sum = get_division_sum(FBDGM_BASS_D1, FBDGM_BASS_D1_IN_LEN, FBDGM_BASS_D1_OUT_LEN, magnitudes);
+    float bass_d2_sum = get_division_sum(FBDGM_BASS_D2, FBDGM_BASS_D2_IN_LEN, FBDGM_BASS_D2_OUT_LEN, magnitudes);
+    float bass_d3_sum = get_division_sum(FBDGM_BASS_D3, FBDGM_BASS_D3_IN_LEN, FBDGM_BASS_D3_OUT_LEN, magnitudes);
 
-    base_channels->at(0).col.r = (uint8_t)clamp(bass_sum, 0.0f, 255.0f);
-    base_channels->at(0).col.g = (uint8_t)clamp(bass_sum - 255.0f, 0.0f, 255.0f);
-    base_channels->at(0).col.b = (uint8_t)clamp(bass_sum - 255.0f * 2.0f, 0.0f, 255.0f);
+    base_channels->at(0).col.r = (uint8_t)clamp(bass_d1_sum / FBDGM_BASS_D1_FACTOR, 0.0f, 255.0f);
+    base_channels->at(0).col.g = (uint8_t)clamp(bass_d2_sum / FBDGM_BASS_D2_FACTOR, 0.0f, 255.0f);
+    base_channels->at(0).col.b = (uint8_t)clamp(bass_d3_sum / FBDGM_BASS_D3_FACTOR, 0.0f, 255.0f);
 
 
     lines = {FBDGM_MIDS_D1, FBDGM_MIDS_D2, FBDGM_MIDS_D3, FBDGM_HIGHS_D1, FBDGM_HIGHS_D2, FBDGM_HIGHS_D3};
