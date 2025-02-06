@@ -119,6 +119,8 @@ static int callback( // the audio callback function
     if (frame_count % 10 == 0){
         // windows volume isnt linear :(, so we have to normalize it.
         linear_master_volume = pow(get_master_volume(), 0.2f);
+        // laptop: 0.2f
+        // pc: 1.7f
         cout << get_master_volume() << " " << linear_master_volume << endl;
     }
     frame_count++;
