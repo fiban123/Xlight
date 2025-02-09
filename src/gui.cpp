@@ -105,7 +105,7 @@ void execute_gui(){
 
         rl::BeginDrawing();
 
-        rl::ClearBackground(rl::DARKGRAY);
+        rl::ClearBackground(rl::BLACK);
 
 
         // draw graph bounds
