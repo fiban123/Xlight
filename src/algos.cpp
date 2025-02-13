@@ -19,7 +19,7 @@ constexpr inline float smoothstep2(float edge0_0, float edge1_0, float edge0_1, 
 }
 
 const inline unsigned int get_magnitude_bin(float freq){
-    return freq / sample_ratio + (float) start_bin_index;
+    return freq / sample_ratio - (float) start_bin_index;
 }
 
 constexpr inline float get_spiked_brightness(float spiked_brightness, const float base_brightness, const float prev_base_brightness, const float decay){
@@ -48,7 +48,7 @@ inline float get_division_sum(float center, float in_len, float out_len, vector<
     float sum = 0.0f;
 
     for (unsigned int i = get_magnitude_bin(center - in_len); i < get_magnitude_bin(center + out_len); i++){
-        float freq = i * sample_ratio;
+        float freq = (i + start_bin_index) * sample_ratio;
 
         float weight = clerp2(center - in_len, center, center, center + out_len, freq);
 
@@ -64,7 +64,7 @@ inline float get_bin_sum(const float start, const float end, vector<float>* magn
     for (unsigned int i = get_magnitude_bin(start); i < get_magnitude_bin(end); i++){
         float freq = i * sample_ratio;
 
-        sum += magnitudes->at(i);
+        sum += magnitudes->at(i);   
     }
 
     return sum;
@@ -259,7 +259,7 @@ void Algo_SFBGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<flo
 }
 
 void Algo_FBDGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes) {
-
+    
     // mids (channel 1)
     float mids_d1_sum = get_division_sum(FBDGM_MIDS_D1, 0.0f, FBDGM_MIDS_D1_OUT_LEN, magnitudes);
     float mids_d2_sum = get_division_sum(FBDGM_MIDS_D2, FBDGM_MIDS_D2_IN_LEN, FBDGM_MIDS_D2_OUT_LEN, magnitudes);
@@ -278,7 +278,7 @@ void Algo_FBDGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<flo
     base_channels->at(2).col.g = (uint8_t)clamp(highs_d2_sum / FBDGM_HIGHS_D2_FACTOR, 0.0f, 255.0f);
     base_channels->at(2).col.b = (uint8_t)clamp(highs_d3_sum / FBDGM_HIGHS_D3_FACTOR, 0.0f, 255.0f);
 
-    // bass
+    // bass (C0)
     float bass_d1_sum = get_division_sum(FBDGM_BASS_D1, FBDGM_BASS_D1_IN_LEN, FBDGM_BASS_D1_OUT_LEN, magnitudes);
     float bass_d2_sum = get_division_sum(FBDGM_BASS_D2, FBDGM_BASS_D2_IN_LEN, FBDGM_BASS_D2_OUT_LEN, magnitudes);
     float bass_d3_sum = get_division_sum(FBDGM_BASS_D3, FBDGM_BASS_D3_IN_LEN, FBDGM_BASS_D3_OUT_LEN, magnitudes);
@@ -286,7 +286,74 @@ void Algo_FBDGM::base_algo(array<Channel, N_CHANNELS>* base_channels, vector<flo
     base_channels->at(0).col.r = (uint8_t)clamp(bass_d1_sum / FBDGM_BASS_D1_FACTOR, 0.0f, 255.0f);
     base_channels->at(0).col.g = (uint8_t)clamp(bass_d2_sum / FBDGM_BASS_D2_FACTOR, 0.0f, 255.0f);
     base_channels->at(0).col.b = (uint8_t)clamp(bass_d3_sum / FBDGM_BASS_D3_FACTOR, 0.0f, 255.0f);
+    
+    /*
+    // total frequency change (C3)
 
 
-    lines = {FBDGM_MIDS_D1, FBDGM_MIDS_D2, FBDGM_MIDS_D3, FBDGM_HIGHS_D1, FBDGM_HIGHS_D2, FBDGM_HIGHS_D3};
+    float total_freq_change = 0.0f;
+
+    float start_bin_index = get_magnitude_bin(FREQ_LOWER_BOUND);
+
+    for (unsigned int i = (start_bin_index == 0 ? 1 : start_bin_index); i < get_magnitude_bin(FREQ_UPPER_BOUND); i++){
+        float freq = (i + start_bin_index) * sample_ratio;
+        float weight = (2.0f / 3.0f) / powf(freq, 1.0f / 3.0f); // derivative of nthroot(x, 1.5f)
+
+        total_freq_change += fabs(magnitudes->at(i) - magnitude_queue.front()[i]) * weight;
+    }
+
+
+    magnitude_queue.pop();
+
+    while (magnitude_queue.size() < FBDGM_C3_QUEUE_LENGTH){
+        magnitude_queue.push(normalized_magnitudes);
+    }
+
+    
+    base_channels->at(3).col.r = (uint8_t)clamp(total_freq_change / 5.0f, 0.0f, 255.0f);
+    */
+
+    // peakiness / harmonics (C3)
+    lines.clear();
+
+    // get average frequency
+    float avg_magnitude = 0.0f;
+    for (int i = get_magnitude_bin(FBDGM_C3_START); i < get_magnitude_bin(FREQ_UPPER_BOUND); i++){
+        
+        avg_magnitude += magnitudes->at(i);
+    }
+    avg_magnitude /= (get_magnitude_bin(FREQ_UPPER_BOUND) - get_magnitude_bin(FBDGM_C3_START));
+
+    float peakiness = 0.0f;
+
+    for (int i = get_magnitude_bin(FBDGM_C3_START); i < get_magnitude_bin(FREQ_UPPER_BOUND) - 3; i++){
+        
+        //peakiness += pow(max(0.0f, magnitudes->at(i) - (avg_magnitude * 4.0f + 150.0f)), 1.1f);
+        //peakiness += pow(max(0.0f, magnitudes->at(i) - avg_magnitude) * magnitudes->at(i) * 0.001f, 1.1f);
+
+        float local_avg_magnitude = 0.0f;
+
+        local_avg_magnitude += magnitudes->at(i - 2);
+        local_avg_magnitude += magnitudes->at(i - 3);
+
+        local_avg_magnitude += magnitudes->at(i + 2);
+        local_avg_magnitude += magnitudes->at(i + 3);
+
+        local_avg_magnitude /= 4.0f;
+
+        float diff = local_avg_magnitude - magnitudes->at(i);
+
+        peakiness += max(0.0f, diff - 30.0f);
+    }
+
+    // 1'
+    base_channels->at(3).col.r = (uint8_t)clamp(peakiness / 6.0f, 0.0f, 255.0f);
+
+    //cout << peakiness << endl;
+
+
+    lines.insert(lines.begin(), {FBDGM_MIDS_D1, FBDGM_MIDS_D2, FBDGM_MIDS_D3, FBDGM_HIGHS_D1, FBDGM_HIGHS_D2, FBDGM_HIGHS_D3});
+}
+
+void Algo_FBDGM::init() {
 }

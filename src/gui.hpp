@@ -29,6 +29,9 @@ rl::Vector2 bottom_left;
 rl::Vector2 top_right;
 rl::Vector2 bottom_right;
 
+bool update_channels = true;
+bool light_mode = false;
+
 vector<rl::Vector2> graph_points;
 
 vector<float> lines;

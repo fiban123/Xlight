@@ -13,6 +13,7 @@
 #include <thread>
 #include <chrono>
 #include <algorithm>
+#include <queue>
 
 #include <fftw3.h>
 #include <portaudio.h>

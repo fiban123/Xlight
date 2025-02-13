@@ -42,10 +42,9 @@ struct Algo_SFBGM : public SpectrumAlgo{
 
 struct Algo_FBDGM : public SpectrumAlgo{
     public:
-
         virtual void base_algo(array<Channel, N_CHANNELS>* base_channels, vector<float>* magnitudes);
 
         virtual void transform_algo(array<Channel, N_CHANNELS>* base_channels, array<Channel, N_CHANNELS>* transformed_channels, vector<float>* magnitudes){};
 
-        virtual void init(){};
+        virtual void init();
 };

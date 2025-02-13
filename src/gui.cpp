@@ -99,61 +99,91 @@ void execute_gui(){
 
     while (!rl::WindowShouldClose()){
 
+        if (update_channels) {
+            algo->execute(&base_channels, &transformed_channels, &normalized_magnitudes);
+        }
+
+
         if (rl::IsKeyPressed(rl::KEY_F11)){
             rl::ToggleFullscreen();
+        }
+        else if (rl::IsKeyPressed(rl::KEY_Q)){
+            // toggle stream
+            if (update_channels) {
+                stop_stream();
+            } else {
+                start_stream();
+            }
+            update_channels = !update_channels;
+        }
+        else if (rl::IsKeyPressed(rl::KEY_W)){
+            // toggle light mode
+            light_mode = !light_mode;
         }
 
         rl::BeginDrawing();
 
         rl::ClearBackground(rl::BLACK);
 
+        if (!light_mode) {
+            // draw graph bounds    
+            rl::DrawLine(top_left.x, top_left.y, bottom_left.x, bottom_left.y, rl::WHITE);
+            rl::DrawLine(bottom_left.x, bottom_left.y, bottom_right.x, bottom_right.y, rl::WHITE);
 
-        // draw graph bounds
-        rl::DrawLine(top_left.x, top_left.y, bottom_left.x, bottom_left.y, rl::WHITE);
-        rl::DrawLine(bottom_left.x, bottom_left.y, bottom_right.x, bottom_right.y, rl::WHITE);
+            // render text
+            rl::DrawText("amplitude", 20, SCREEN_HEIGHT / 2, 20, rl::WHITE);
+            rl::DrawText("frequency (hz)", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 45, 20, rl::WHITE);
 
-        // render text
-        rl::DrawText("amplitude", 20, SCREEN_HEIGHT / 2, 20, rl::WHITE);
-        rl::DrawText("frequency (hz)", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 45, 20, rl::WHITE);
+            // draw indicator lines
+            rl::DrawLine(bottom_left.x, bottom_left.y, bottom_left.x - 20, bottom_left.y, rl::WHITE);
+            rl::DrawLine(top_left.x, top_left.y, top_left.x - 20, top_left.y, rl::WHITE);
 
-        // draw indicator lines
-        rl::DrawLine(bottom_left.x, bottom_left.y, bottom_left.x - 20, bottom_left.y, rl::WHITE);
-        rl::DrawLine(top_left.x, top_left.y, top_left.x - 20, top_left.y, rl::WHITE);
+            rl::DrawLine(bottom_left.x, bottom_left.y, bottom_left.x, bottom_left.y + 20, rl::WHITE);
+            rl::DrawLine(bottom_right.x, bottom_right.y, bottom_right.x, bottom_right.y + 20, rl::WHITE);
 
-        rl::DrawLine(bottom_left.x, bottom_left.y, bottom_left.x, bottom_left.y + 20, rl::WHITE);
-        rl::DrawLine(bottom_right.x, bottom_right.y, bottom_right.x, bottom_right.y + 20, rl::WHITE);
+            // draw indicator values
+            rl::DrawText((to_string((int)actual_start_freq) + " hz").c_str(), bottom_left.x - 8, bottom_left.y + 25, 30, rl::WHITE);
+            rl::DrawText((to_string((int)actual_end_freq) + " hz").c_str(), bottom_right.x - 100, bottom_right.y + 25, 30, rl::WHITE);
 
-        // draw indicator values
-        rl::DrawText((to_string((int)actual_start_freq) + " hz").c_str(), bottom_left.x - 8, bottom_left.y + 25, 30, rl::WHITE);
-        rl::DrawText((to_string((int)actual_end_freq) + " hz").c_str(), bottom_right.x - 100, bottom_right.y + 25, 30, rl::WHITE);
+            rl::DrawText(to_string(MAX_AMPLITUDE).c_str(), top_left.x - 100, top_left.y - 12, 30, rl::WHITE);
+            rl::DrawText("0", bottom_left.x - 45, bottom_left.y - 12, 30, rl::WHITE);
 
-        rl::DrawText(to_string(MAX_AMPLITUDE).c_str(), top_left.x - 100, top_left.y - 12, 30, rl::WHITE);
-        rl::DrawText("0", bottom_left.x - 45, bottom_left.y - 12, 30, rl::WHITE);
+            rl::DrawText((to_string(rl::GetFPS()) + " FPS").c_str(), 200, 30, 30, rl::WHITE);
+            rl::DrawText(("max latency: " + to_string(max_latency_ms) + " ms").c_str(), 400, 30, 20, rl::WHITE);
+            rl::DrawText(("FFT rate: " + to_string(FFT_rate) + " Hz").c_str(), 800, 30, 20, rl::WHITE);
 
-        rl::DrawText((to_string(rl::GetFPS()) + " FPS").c_str(), 200, 30, 30, rl::WHITE);
-        rl::DrawText(("max latency: " + to_string(max_latency_ms) + " ms").c_str(), 400, 30, 20, rl::WHITE);
-        rl::DrawText(("FFT rate: " + to_string(FFT_rate) + " Hz").c_str(), 800, 30, 20, rl::WHITE);
+            calculate_graph_points();
 
-        calculate_graph_points();
+            draw_channels();
 
-        draw_channels();
+            // map cursor x from (150 to screen_width) to (FREQ_LOWER_BOUND to FREQ_UPPER_BOUND)
+            float cursor_normalized_frequency = nmap((float)rl::GetMouseX(), 150, SCREEN_WIDTH - 50, min_normalized_amplitude, max_normalized_amplitude);
+            float cursor_frequency = denormalize_frequency(cursor_normalized_frequency);
 
-        // map cursor x from (150 to screen_width) to (FREQ_LOWER_BOUND to FREQ_UPPER_BOUND)
-        float cursor_normalized_frequency = nmap((float)rl::GetMouseX(), 150, SCREEN_WIDTH - 50, min_normalized_amplitude, max_normalized_amplitude);
-        float cursor_frequency = denormalize_frequency(cursor_normalized_frequency);
-
-        rl::DrawText(to_string(cursor_frequency).c_str(), top_right.x - 200, top_right.y, 40, rl::WHITE);
+            rl::DrawText(to_string(cursor_frequency).c_str(), top_right.x - 200, top_right.y, 40, rl::WHITE);
 
 
-        for (size_t i = 0; i < lines.size(); i++){
-                float normalized_frequency = normalize_frequency(lines[i]);
-    
-                float x = nmap(normalized_frequency, min_normalized_amplitude, max_normalized_amplitude, 150, SCREEN_WIDTH - 50);
+            for (size_t i = 0; i < lines.size(); i++){
+                    float normalized_frequency = normalize_frequency(lines[i]);
+        
+                    float x = nmap(normalized_frequency, min_normalized_amplitude, max_normalized_amplitude, 150, SCREEN_WIDTH - 50);
 
-                rl::DrawLine(x, 0, x, SCREEN_HEIGHT, rl::BLUE);
+                    rl::DrawLine(x, 0, x, SCREEN_HEIGHT, rl::BLUE);
+            }
+            // draw graph
+            rl::DrawSplineLinear(graph_points.data(), graph_points.size(), 2.0f, rl::RED);
+        } else {
+            // draw light mode
+            for (unsigned int i = 0; i < N_CHANNELS; i++){
+                rl::Color col;
+                col.r = (uint8_t)base_channels[i].col.r;
+                col.g = (uint8_t)base_channels[i].col.g;
+                col.b = (uint8_t)base_channels[i].col.b;
+                col.a = (uint8_t)255;
+
+                rl::DrawRectangle(SCREEN_WIDTH - SCREEN_WIDTH / N_CHANNELS * (i + 1), 0, SCREEN_WIDTH / N_CHANNELS, SCREEN_HEIGHT, col);
+            }
         }
-        // draw graph
-        rl::DrawSplineLinear(graph_points.data(), graph_points.size(), 2.0f, rl::RED);
 
 
         rl::EndDrawing();

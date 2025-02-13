@@ -113,8 +113,6 @@ static int callback( // the audio callback function
         normalized_magnitudes[i - start_bin_index] = magnitude;
     }
 
-    algo->execute(&base_channels, &transformed_channels, &normalized_magnitudes);
-
     // get master volume every 10 frames
     if (frame_count % 10 == 0){
         // windows volume isnt linear :(, so we have to normalize it.
