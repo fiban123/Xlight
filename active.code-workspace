@@ -1,7 +1,22 @@
 {
-    "folders": [
-        {
-            "path": "."
-        }
-    ]
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"iostream": "cpp",
+			"vector": "cpp",
+			"ostream": "cpp",
+			"numeric": "cpp",
+			"iomanip": "cpp",
+			"array": "cpp",
+			"*.dlg": "cpp",
+			"*.idl": "cpp",
+			"chrono": "cpp",
+			"thread": "cpp"
+		},
+		"git.useForcePushIfIncludes": false
+	}
 }
