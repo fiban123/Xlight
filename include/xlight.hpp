@@ -38,13 +38,4 @@ class Xlight{
         // Audio
         AudioStream stream; // must be initialized before starting
 
-        // general
-        vector<float> fft_magnitudes;
-        function<void(float)> algo;
-
-        float sysaudio_volume;
-        bool normalize_magnitudes;
-
-        void init();
-        void set_algo(function<void(float)> func);
 };
