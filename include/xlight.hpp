@@ -35,7 +35,4 @@ class Xlight{
         // GUI
         GUI gui; // must be initialized before starting
 
-        // Audio
-        AudioStream stream; // must be initialized before starting
-
 };

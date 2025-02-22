@@ -15,7 +15,11 @@
 			"*.dlg": "cpp",
 			"*.idl": "cpp",
 			"chrono": "cpp",
-			"thread": "cpp"
+			"thread": "cpp",
+			"*.tcc": "cpp",
+			"deque": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp"
 		},
 		"git.useForcePushIfIncludes": false
 	}

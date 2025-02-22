@@ -3,21 +3,27 @@
 #include <portaudio.h>
 #include <fftw3.h>
 
+#include "../include/math.hpp"
+
 #include <stddef.h>
 #include <iostream>
 #include <cstring>
 #include <vector>
 #include <functional>
+#include <math.h>
+#include <map>
+#include <deque>
 
 using namespace std;
 
 #define CHECKERR(err) if (err != paNoError){ cout << "PA error: " << Pa_GetErrorText(err) << endl; exit(1);}
 
 struct AudioStream{
-    bool running;
+    bool initialized = false;
+    bool running = false;
 
     // audio
-    size_t sample_rate;
+    float sample_rate;
     float sample_ratio;
     float latency;
     PaDeviceIndex input_device;
@@ -28,12 +34,16 @@ struct AudioStream{
     size_t frames_per_fft;
     fftwf_plan fft_plan;
     
-    vector<float> fft_buffer;
+    vector<float> fft_in_buf;
+    vector<float> fft_out_buf;
     vector<float> spectrogram;
+    vector<float> spectrogram_derivative;
     function<void(float)> algo;
     
-    bool normalize_spectrogram;
-    float sysaudio_volume;
+    bool normalize_spectrogram = true;
+    float spectrogram_factor = 1.0f;
+    size_t spectrogram_factor_update_rate;
+    function<void(float*)> spectrogram_factor_update_func;
     
     
     static int stream_callback(
@@ -42,7 +52,8 @@ struct AudioStream{
         void* user_data);
     PaDeviceIndex default_input_device();
 
-    void init(size_t _frames_per_buffer, size_t _frames_per_fft, PaDeviceIndex _device);
+    void init(size_t _frames_per_buffer, size_t _frames_per_fft, PaDeviceIndex _device,
+        size_t _spectrogram_factor_update_rate, function<void(float*)>_spectrogram_factor_update_func);
     void start();
     void stop();
 

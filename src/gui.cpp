@@ -1,11 +1,15 @@
 #include "../include/gui.hpp"
 
+void GUI::init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t frames_per_buffer, size_t frames_per_fft, PaDeviceIndex device, size_t spectrogram_factor_update_rate,
+               function<void(float*)> spectrogram_factor_update_func) {
 
-// initialize the GUI object
-void GUI::init(size_t _fps, sf::VideoMode _mode){
+    stream.init(frames_per_buffer, frames_per_fft, device, spectrogram_factor_update_rate, spectrogram_factor_update_func);
+
     fps = _fps;
-    mode = _mode;
+    window_mode = _mode;
+    max_magnitude = _max_magnitude;
     running = false;
+    spectrogram_graph.init({50, 50}, 1800, 1000, 0, stream.sample_rate / 2, 0, max_magnitude);
 }
 
 // start the GUI
@@ -30,7 +34,7 @@ void GUI::wait_for_exit() {
 
 void GUI::loop() {
     // create the window
-    window.create(mode, "SFML GUI");
+    window.create(window_mode, "SFML GUI");
     window.setFramerateLimit(fps);
 
     while (window.isOpen()) {
@@ -45,12 +49,59 @@ void GUI::loop() {
                 if (event.key.code == sf::Keyboard::Escape){
                     window.close();
                 }
+
+                else if (event.key.code == sf::Keyboard::W){
+                    if (stream.running){
+                        stream.stop();
+                    }
+                    else{
+                        stream.start();
+                    }
+                }
+
+                else if (event.key.code == sf::Keyboard::Right){
+                    // increment the mode enum
+                    mode = static_cast<gui_mode>((mode + 1) % MODE_COUNT);
+                    cout << mode << endl;
+                }
             }
         }
 
         if (!running){
             window.close();
         }
+
+        window.clear(sf::Color(0, 0, 0));
+
+        if (mode == MODE_SPECTROGRAM || mode == MODE_SPECTROGRAM_DERIVATIVE){
+            vector<sf::Vector2f> spectrogram_points(stream.spectrogram.size());
+            // calculate graph points
+
+            if (mode == MODE_SPECTROGRAM){
+                for (size_t i = 0; i < stream.spectrogram.size(); i++){
+                    float freq = i * stream.sample_ratio;
+                    float log_freq = nmap(powf(freq, 0.6f), 0.0f, powf(stream.sample_rate / 2, 0.6f), 0.0f, stream.sample_rate / 2);
+                    spectrogram_points[i] = {log_freq, stream.spectrogram[i]};
+                }
+                
+                //spectrogram_graph.add_bars(spectrogram_points, 0.0f);
+                spectrogram_graph.add_linear_spline(spectrogram_points);
+            }
+            else if (mode == MODE_SPECTROGRAM_DERIVATIVE){
+                for (size_t i = 0; i < stream.spectrogram_derivative.size(); i++){
+                    float freq = i * stream.sample_ratio;
+                    float log_freq = nmap(powf(freq, 0.6f), 0.0f, powf(stream.sample_rate / 2, 0.6f), 0.0f, stream.sample_rate / 2);
+                    spectrogram_points[i] = {log_freq, stream.spectrogram[i]};
+                }
+                
+                spectrogram_graph.add_bars(spectrogram_points, 0.0f);
+                //spectrogram_graph.add_linear_spline(spectrogram_points);
+            }
+    
+            spectrogram_graph.draw(window);
+
+        }
+        
 
         window.display();
     }
@@ -62,4 +113,58 @@ void GUI::loop() {
 GUI::~GUI() {
     running = false;
     gui_thread.detach();
+}
+
+void Graph::init(sf::Vector2f _pos, float _width, float _height, float _min_x, float _max_x, float _min_y, float _max_y) {
+    pos = _pos;
+    width = _width;
+    height = _height;
+    min_x = _min_x;
+    max_x = _max_x;
+    min_y = _min_y;
+    max_y = _max_y;
+    
+    // initialize bounding vertices
+    bounding_vertices = sf::VertexArray(sf::LineStrip, 5);
+    bounding_vertices[0] = sf::Vector2f(pos.x, pos.y);
+    bounding_vertices[1] = sf::Vector2f(pos.x + width, pos.y);
+    bounding_vertices[2] = sf::Vector2f(pos.x + width, pos.y + height);
+    bounding_vertices[3] = sf::Vector2f(pos.x, pos.y + height);
+    bounding_vertices[4] = sf::Vector2f(pos.x, pos.y);
+}
+
+void Graph::add_linear_spline(const vector<sf::Vector2f>& points) {
+  vertices = sf::VertexArray(sf::LineStrip, points.size());
+
+  for (size_t i = 0; i < points.size(); i++) {
+    vertices[i] = sf::Vector2f{nmap(points[i].x, min_x, max_x, pos.x, pos.x + width), nmap(points[i].y, min_y, max_y, pos.y + height, pos.y)};
+    //cout << vertices[i].position.x << " " << vertices[i].position.y << endl;
+  }
+}
+
+void Graph::add_bars(const vector<sf::Vector2f>& points, float neutral = 0.0f) {
+    vertices = sf::VertexArray(sf::Triangles, points.size() * 6);
+
+    float g_neutral = nmap(neutral, min_y, max_y, pos.y + height, pos.y) ;
+
+    for (size_t i = 0; i < points.size() - 1; i++){
+        float x = nmap(points[i].x, min_x, max_x, pos.x, pos.x + width);
+        float y = nmap(points[i].y + neutral, min_y, max_y, pos.y + height, pos.y);
+
+        float next_x = nmap(points[i + 1].x, min_x, max_x, pos.x, pos.x + width);
+
+        float delta = next_x - x;
+        vertices[i * 6] = sf::Vector2f(x, y);
+        vertices[i * 6 + 1] = sf::Vector2f(x, g_neutral);
+        vertices[i * 6 + 2] = sf::Vector2f(x + delta, y);
+
+        vertices[i * 6 + 3] = sf::Vector2f(x + delta, y);
+        vertices[i * 6 + 4] = sf::Vector2f(x + delta, g_neutral);
+        vertices[i * 6 + 5] = sf::Vector2f(x, g_neutral);
+    }
+}
+
+void Graph::draw(sf::RenderWindow& window) {
+    window.draw(bounding_vertices);
+    window.draw(vertices);
 }
