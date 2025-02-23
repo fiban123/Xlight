@@ -45,7 +45,6 @@ void AudioStream::init(size_t _frames_per_buffer, size_t _frames_per_fft, PaDevi
     fft_in_buf.resize(frames_per_fft);
     fft_out_buf.resize(frames_per_fft);
     spectrogram.resize(frames_per_fft / 2);
-    spectrogram_derivative.resize(frames_per_fft / 2);
 
     fft_plan = fftwf_plan_r2r_1d(
         frames_per_fft,
@@ -138,9 +137,6 @@ int AudioStream::stream_callback(const void* _input_buf, void* output_buf, unsig
     */
 
     // calculate spectrogram derivative
-    for (size_t i = 0; i < instance->spectrogram_derivative.size() - 1; i++){
-        instance->spectrogram_derivative[i] = instance->spectrogram[i + 1] - instance->spectrogram[i]; 
-    }
 
 
     return 0;

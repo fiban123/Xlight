@@ -4,18 +4,19 @@
 #include <thread>
 #include <iostream>
 #include <math.h>
+#include <memory>
 
 #include "../include/math.hpp"
 #include "../include/stream.hpp"
+#include "../include/algos.hpp"
 
 using namespace std;
 
-enum gui_mode{
-    MODE_SPECTROGRAM,
-    MODE_SPECTROGRAM_DERIVATIVE,
-
-    MODE_COUNT // do not remove this !!
+struct guiStates{
+    bool draw_spectrogram = true;
+    bool draw_light_preview = true;
 };
+
 
 struct Graph{
     sf::Vector2f pos;
@@ -37,9 +38,12 @@ struct Graph{
 };
 
 struct GUI{
-    AudioStream stream;
+    guiStates state;
 
-    gui_mode mode = MODE_SPECTROGRAM;
+    array<sf::Color, 4> channels;
+    unique_ptr<VisualizationAlgorithm> algo;
+
+    AudioStream stream;
 
     sf::VideoMode window_mode;
     sf::RenderWindow window;
@@ -58,7 +62,7 @@ struct GUI{
     //void init(size_t _fps, sf::VideoMode _mode, float _max_magnitude);
 
     void init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t frames_per_buffer, size_t frames_per_fft, PaDeviceIndex device, 
-        size_t spectrogram_factor_update_rate, function<void(float*)> spectrogram_factor_update_func);
+        size_t spectrogram_factor_update_rate, function<void(float*)> spectrogram_factor_update_func, Algo _algo);
 
     void start();
     void stop();

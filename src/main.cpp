@@ -31,7 +31,8 @@ int main(){
 
     //xlight.gui.stream.init(128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func); 
 
-    xlight.gui.init(240, sf::VideoMode::getDesktopMode(), 1000, 128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func);
+    xlight.gui.init(240, sf::VideoMode::getDesktopMode(), 1000, 128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func, 
+    ALGO_FBDGM);
 
     xlight.gui.stream.start();
 

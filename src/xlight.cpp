@@ -5,5 +5,6 @@
 #include "../include/xlight.hpp"
 #include "../src/stream.cpp"
 #include "../src/gui.cpp"
+#include "../src/algos.cpp"
 
 #include <functional>

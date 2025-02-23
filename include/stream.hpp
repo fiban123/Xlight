@@ -37,7 +37,6 @@ struct AudioStream{
     vector<float> fft_in_buf;
     vector<float> fft_out_buf;
     vector<float> spectrogram;
-    vector<float> spectrogram_derivative;
     function<void(float)> algo;
     
     bool normalize_spectrogram = true;

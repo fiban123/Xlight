@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <deque>
+#include <algorithm>
 
 using namespace std;
 
@@ -12,3 +13,6 @@ inline float vecmax(vector<float>& v);
 inline float vecavg(vector<float>& v);
 
 inline float dequeavg(deque<float>& d);
+
+constexpr inline float clerp(float edge0, float edge1, float x);
+inline constexpr float clerp2(float edge0, float edge1, float edge2, float edge3, float x);

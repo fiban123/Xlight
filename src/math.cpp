@@ -31,3 +31,19 @@ inline float dequeavg(deque<float>& d) {
 
     return sum / d.size();
 }
+
+
+constexpr inline float clerp(float edge0, float edge1, float x) {
+    return clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+}
+
+inline constexpr float clerp2(float edge0, float edge1, float edge2, float edge3, float x) {
+    if (x < edge0 || x > edge3){
+        return 0.0f;
+    } else if (x > edge1 && x < edge2){
+        return 1.0f;
+    } else if (x > edge0 && x < edge1){
+        return clerp(edge0, edge1, x);
+    }
+    return clerp(edge3, edge2, x);
+}
