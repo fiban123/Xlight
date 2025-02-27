@@ -54,15 +54,18 @@ void FBDGM::execute() {
     
         // get average frequency
         float avg_magnitude = 0.0f;
-        for (unsigned int i = get_freq_bin(harmonics_start); i < spectrogram.size(); i++){
+        for (unsigned int i = get_freq_bin(harmonics_d1); i < spectrogram.size(); i++){
             
             avg_magnitude += spectrogram[i];
         }
-        avg_magnitude /= (spectrogram.size() - get_freq_bin(harmonics_start));
+        avg_magnitude /= (spectrogram.size() - get_freq_bin(harmonics_d1));
     
-        float peakiness = 0.0f;
+        float harmonics_d1_sum = 0.0f;
+        float harmonics_d2_sum = 0.0f;
+        float harmonics_d3_sum = 0.0f;
     
-        for (unsigned int i = get_freq_bin(harmonics_start); i < spectrogram.size() - 3; i++){
+        for (unsigned int i = get_freq_bin(harmonics_d1); i < spectrogram.size() - 3; i++){
+            float freq = i * sample_ratio;
             
             //peakiness += pow(max(0.0f, magnitudes->at(i) - (avg_magnitude * 4.0f + 150.0f)), 1.1f);
             //peakiness += pow(max(0.0f, magnitudes->at(i) - avg_magnitude) * magnitudes->at(i) * 0.001f, 1.1f);
@@ -78,12 +81,18 @@ void FBDGM::execute() {
             local_avg_magnitude /= 4.0f;
     
             float diff = local_avg_magnitude - spectrogram[i];
+
+            float harmonic_magnitude = max(0.0f, diff - 15.0f);
     
-            peakiness += max(0.0f, diff - 15.0f);
+            harmonics_d1_sum += harmonic_magnitude * clerp2(harmonics_d1 - harmonics_d1_in_len, harmonics_d1, harmonics_d1, harmonics_d1 + harmonics_d1_out_len, freq);
+            harmonics_d2_sum += harmonic_magnitude * clerp2(harmonics_d2 - harmonics_d2_in_len, harmonics_d2, harmonics_d2, harmonics_d2 + harmonics_d2_out_len, freq);
+            harmonics_d3_sum += harmonic_magnitude * clerp2(harmonics_d3 - harmonics_d3_in_len, harmonics_d3, harmonics_d3, harmonics_d3 + harmonics_d3_out_len, freq);
         }
     
         // 1'
-        channels[3].r = (uint8_t)clamp(peakiness / 6.0f, 0.0f, 255.0f);
+        channels[3].r = (uint8_t)clamp(harmonics_d1_sum / harmonics_d1_quotient, 0.0f, 255.0f);
+        channels[3].g = (uint8_t)clamp(harmonics_d2_sum / harmonics_d2_quotient, 0.0f, 255.0f);
+        channels[3].b = (uint8_t)clamp(harmonics_d3_sum / harmonics_d3_quotient, 0.0f, 255.0f);
 }
 
 void FBDGM::init() {
@@ -120,4 +129,11 @@ void FBDGM::init() {
     highs_d2_out_len = (highs_d3 - highs_d2);
     highs_d3_in_len = highs_d2_out_len;
     highs_d3_out_len = 0.0f;
+
+    harmonics_d1_in_len = 0.0f;
+    harmonics_d1_out_len = (harmonics_d2 - harmonics_d1);
+    harmonics_d2_in_len = harmonics_d1_out_len;
+    harmonics_d2_out_len = (harmonics_d3 - harmonics_d2);
+    harmonics_d3_in_len = harmonics_d2_out_len;
+    harmonics_d3_out_len = (harmonics_end - harmonics_d3);
 }

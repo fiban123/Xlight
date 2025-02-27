@@ -66,9 +66,16 @@ struct FBDGM : VisualizationAlgorithm{
     float highs_d2_base_quotient = highs_d1_base_quotient;
     float highs_d3_base_quotient = highs_d1_base_quotient;
 
+    float harmonics_d1_quotient = 4.0f;
+    float harmonics_d2_quotient = 4.0f;
+    float harmonics_d3_quotient = 1.5f;
 
-    float harmonics_start = 300.0f;
-    float harmonics_quotient = 1.0f;
+
+    float harmonics_d1 = 300.0f;
+    float harmonics_d2 = 2000.0f;
+    float harmonics_d3 = 12000.0f;
+    float harmonics_end = 22000.0f;
+    float harmonics_quotient = 6.0f;
 
 
     float bass_d1_quotient;
@@ -103,6 +110,13 @@ struct FBDGM : VisualizationAlgorithm{
     float highs_d2_out_len;
     float highs_d3_in_len;
     float highs_d3_out_len;
+
+    float harmonics_d1_in_len;
+    float harmonics_d1_out_len;
+    float harmonics_d2_in_len;
+    float harmonics_d2_out_len;
+    float harmonics_d3_in_len;
+    float harmonics_d3_out_len;
 };
 
 enum Algo{

@@ -45,7 +45,7 @@ void GUI::wait_for_exit() {
 
 void GUI::loop() {
     // create the window
-    window.create(window_mode, "SFML GUI");
+    window.create(window_mode, "SFML GUI", sf::Style::Fullscreen);
     window.setFramerateLimit(fps);
 
     while (window.isOpen()) {
