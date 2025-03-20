@@ -33,9 +33,10 @@ struct AudioStream{
     size_t frames_per_buffer;
     size_t frames_per_fft;
     fftwf_plan fft_plan;
-    
-    vector<float> fft_in_buf;
-    vector<float> fft_out_buf;
+
+    float* fft_in_buf;
+    float* fft_out_buf;
+
     vector<float> spectrogram;
     function<void(float)> algo;
     
@@ -43,7 +44,6 @@ struct AudioStream{
     float spectrogram_factor = 1.0f;
     size_t spectrogram_factor_update_rate;
     function<void(float*)> spectrogram_factor_update_func;
-    
     
     static int stream_callback(
         const void* input_buf, void* output_buf, unsigned long frames_per_buffer,

@@ -42,14 +42,15 @@ void AudioStream::init(size_t _frames_per_buffer, size_t _frames_per_fft, PaDevi
 
     initialized = true;
 
-    fft_in_buf.resize(frames_per_fft);
-    fft_out_buf.resize(frames_per_fft);
+    fft_in_buf = (float*) fftwf_malloc(sizeof(float) * frames_per_fft);
+    fft_out_buf = (float*) fftwf_malloc(sizeof(float) * frames_per_fft);
+
     spectrogram.resize(frames_per_fft / 2);
 
     fft_plan = fftwf_plan_r2r_1d(
         frames_per_fft,
-        fft_in_buf.data(),
-        fft_out_buf.data(),
+        fft_in_buf,
+        fft_out_buf,
         FFTW_R2HC,
         FFTW_PATIENT
     );
@@ -100,11 +101,11 @@ int AudioStream::stream_callback(const void* _input_buf, void* output_buf, unsig
 
 
     // reformat FFT samples
-    copy(instance->fft_in_buf.begin() + frames_per_buffer, instance->fft_in_buf.end(), instance->fft_in_buf.begin());
+    copy(instance->fft_in_buf + frames_per_buffer, instance->fft_in_buf + instance->frames_per_fft, instance->fft_in_buf);
 
     
     // add new FFT samples
-    copy(input_buf, input_buf + sizeof(float) * frames_per_buffer, instance->fft_in_buf.end() - frames_per_buffer);
+    copy(input_buf, input_buf + frames_per_buffer, instance->fft_in_buf + (instance->frames_per_fft - frames_per_buffer) );
     
     // perform FFT
     fftwf_execute(instance->fft_plan);
@@ -119,7 +120,7 @@ int AudioStream::stream_callback(const void* _input_buf, void* output_buf, unsig
     }
     
     instance->spectrogram[instance->frames_per_fft / 2 - 1] = fabs(instance->fft_out_buf[instance->frames_per_fft / 2 - 1]); // nyquist frequency
-
+    
     /*
     float max_waveform = vecmax(instance->fft_in_buf);
     if (volume_factor_map.find(instance->spectrogram_factor) == volume_factor_map.end()){
@@ -148,8 +149,10 @@ AudioStream::~AudioStream() {
     //CHECKERR(err);
     if (running){
         cout << "closing audio stream of device" << input_device << endl;
-        Pa_CloseStream(stream);
+        Pa_AbortStream(stream);
     }
 
+    fftwf_free(fft_in_buf);
+    fftwf_free(fft_out_buf);
     fftwf_destroy_plan(fft_plan);
 }

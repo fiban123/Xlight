@@ -59,10 +59,8 @@ struct GUI{
     Graph spectrogram_graph;
     Graph spectrogram_derivative_graph;
 
-    //void init(size_t _fps, sf::VideoMode _mode, float _max_magnitude);
-
-    void init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t frames_per_buffer, size_t frames_per_fft, PaDeviceIndex device, 
-        size_t spectrogram_factor_update_rate, function<void(float*)> spectrogram_factor_update_func, Algo _algo);
+    void init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t frames_per_buffer, size_t frames_per_fft, PaDeviceIndex device, size_t spectrogram_factor_update_rate,
+              function<void(float*)> spectrogram_factor_update_func, Algo _algo);
 
     void start();
     void stop();

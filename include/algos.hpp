@@ -54,8 +54,8 @@ struct FBDGM : VisualizationAlgorithm{
     float highs_d3 = 22000.0f;
 
 
-    float bass_d1_base_quotient = 30.0f;
-    float bass_d2_base_quotient = 21.0f;
+    float bass_d1_base_quotient = 7.0f;
+    float bass_d2_base_quotient = 9.0f;
     float bass_d3_base_quotient = bass_d1_base_quotient;
 
     float mids_d1_base_quotient = 30.0f;

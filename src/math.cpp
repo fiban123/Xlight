@@ -32,6 +32,11 @@ inline float dequeavg(deque<float>& d) {
     return sum / d.size();
 }
 
+inline float normalize_color(float value) {
+    float min = 0.0f;
+    float max = powf(255.0f, 2);
+    return nmap(powf(value, 2), min, max, 0.0f, 255.0f);
+}
 
 constexpr inline float clerp(float edge0, float edge1, float x) {
     return clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);

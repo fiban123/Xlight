@@ -34,11 +34,15 @@ int main(){
     xlight.gui.init(240, sf::VideoMode::getDesktopMode(), 1000, 128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func, 
     ALGO_FBDGM);
 
+    xlight.dmx.channels = &xlight.gui.channels;
+
     xlight.gui.stream.start();
 
     xlight.gui.start();
+    xlight.dmx.start();
 
     xlight.gui.wait_for_exit();
+    xlight.dmx.stop();
 
     return 0;
 }
