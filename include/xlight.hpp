@@ -23,6 +23,7 @@
 #include "stream.hpp"
 #include "gui.hpp"
 #include "serial.hpp"
+#include "interface.hpp"
 
 #include <vector>
 #include <functional>
@@ -37,4 +38,6 @@ class Xlight{
         GUI gui; // must be initialized before starting
 
         DMXInterface dmx;  // must be initialized before starting
+
+        TerminalInterface interface;
 };

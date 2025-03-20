@@ -137,3 +137,15 @@ void FBDGM::init() {
     harmonics_d3_in_len = harmonics_d2_out_len;
     harmonics_d3_out_len = (harmonics_end - harmonics_d3);
 }
+
+void FBDGM::change_setting(string setting, float new_value) {
+    const auto it = setting_map.find(setting);
+    if (it != setting_map.end()) {
+        *(it->second) = new_value;
+        init();
+        cout << "changed setting" << endl;
+    }
+    else{
+        cout << "setting not found" << endl;
+    }
+}

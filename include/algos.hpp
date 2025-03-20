@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 #include "../include/math.hpp"
 
@@ -17,6 +18,7 @@ struct VisualizationAlgorithm{ // abstract struct
     
     virtual void init() = 0;
 
+    virtual void change_setting(string setting, float new_value) = 0;
     // helpers
     
     inline float get_division_sum(float center, float in_len, float out_len);
@@ -39,6 +41,11 @@ struct FBDGM : VisualizationAlgorithm{
     void execute();
 
     void init();
+
+    void change_setting(string setting, float new_value);
+    map<string, float*> setting_map = {
+        {"bass_d1_quotient", &bass_d1_base_quotient}
+    };
 
     float bass_start = 0.0f;
     float bass_d1 = 40.0f;

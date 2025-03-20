@@ -7,5 +7,6 @@
 #include "../src/gui.cpp"
 #include "../src/algos.cpp"
 #include "../src/serial.cpp"
+#include "../src/interface.cpp"
 
 #include <functional>

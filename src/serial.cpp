@@ -23,7 +23,6 @@ FT232R::FT232R() {
     }
 
 
-    // Set line properties: 8 data bits, 2 stop bits, no parity.
     ret = ftdi_set_line_property(ctx, BITS_8, STOP_BIT_2, (ftdi_parity_type)0);
     if (ret < 0) {
         string err = ftdi_get_error_string(ctx);
@@ -48,7 +47,6 @@ inline int FT232R::set_break(ftdi_break_type state) {
 void FT232R::write_dmx_frame(vector<unsigned char> data) {
     int ret;
 
-    // --- Break ---
     ret = set_break(BREAK_ON);
     if (ret < 0) {
         cerr << "Failed to set break on: " << ftdi_get_error_string(ctx) << endl;
@@ -56,7 +54,6 @@ void FT232R::write_dmx_frame(vector<unsigned char> data) {
     }
     busy_wait(100 * 1000); // wait 100us
 
-    // --- Mark After Break ---
     ret = set_break(BREAK_OFF);
     if (ret < 0) {
         cerr << "Failed to set break off: " << ftdi_get_error_string(ctx) << endl;
@@ -64,27 +61,23 @@ void FT232R::write_dmx_frame(vector<unsigned char> data) {
     }
     busy_wait(12 * 1000); // wait 12us
 
-    // --- Frame Body ---
-    // Prepend the DMX start code (0x00) to the data.
-    std::vector<unsigned char> frame;
+    vector<unsigned char> frame;
     frame.push_back(0x00);  // DMX start code
     frame.insert(frame.end(), data.begin(), data.end());
 
     ret = ftdi_write_data(ctx, frame.data(), static_cast<int>(frame.size()));
     if (ret < 0) {
-        std::cerr << "Failed to write DMX data: " << ftdi_get_error_string(ctx) << std::endl;
+        cerr << "Failed to write DMX data: " << ftdi_get_error_string(ctx) << endl;
     }
-    // --- Idle ---
     busy_wait(1 * 1000000); // wait for 10 ms
 }
 
 FT232R::~FT232R() {
     if (ctx) {
-        std::cout << "Closing FTDI device." << std::endl;
-        // Optionally reset or cancel transfers here
+        cout << "Closing FTDI device." << std::endl;
         int ret = ftdi_usb_close(ctx);
         if (ret < 0) {
-            std::cerr << "ftdi_usb_close error: " << ftdi_get_error_string(ctx) << std::endl;
+            cerr << "ftdi_usb_close error: " << ftdi_get_error_string(ctx) << endl;
         }
         ftdi_free(ctx);
         ctx = nullptr;

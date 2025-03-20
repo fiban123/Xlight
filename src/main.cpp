@@ -35,14 +35,18 @@ int main(){
     ALGO_FBDGM);
 
     xlight.dmx.channels = &xlight.gui.channels;
+    
+    xlight.interface.init(xlight.gui.algo.get());
+
 
     xlight.gui.stream.start();
 
     xlight.gui.start();
-    xlight.dmx.start();
+    //xlight.dmx.start();
+    xlight.interface.start();
 
     xlight.gui.wait_for_exit();
-    xlight.dmx.stop();
+    //xlight.dmx.stop();
 
     return 0;
 }
