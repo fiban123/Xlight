@@ -44,7 +44,36 @@ struct FBDGM : VisualizationAlgorithm{
 
     void change_setting(string setting, float new_value);
     map<string, float*> setting_map = {
-        {"bass_d1_quotient", &bass_d1_base_quotient}
+        {"bass_start", &bass_start},
+        {"bass_d1", &bass_d1},
+        {"bass_d2", &bass_d2},
+        {"bass_d3", &bass_d3},
+        {"mids_d1", &mids_d1},
+        {"mids_d2", &mids_d2},
+        {"mids_d3", &mids_d3},
+        {"highs_d1", &highs_d1},
+        {"highs_d2", &highs_d2},
+        {"highs_d3", &highs_d3},
+        {"harmonics_d1", &harmonics_d1},
+        {"harmonics_d2", &harmonics_d2},
+        {"harmonics_d3", &harmonics_d3},
+        {"harmonics_end", &harmonics_end},
+
+
+        {"bass_d1_base_quotient", &bass_d1_base_quotient},
+        {"bass_d2_base_quotient", &bass_d2_base_quotient},
+        {"bass_d3_base_quotient", &bass_d3_base_quotient},
+        {"mids_d1_base_quotient", &mids_d1_base_quotient},
+        {"mids_d2_base_quotient", &mids_d2_base_quotient},
+        {"mids_d3_base_quotient", &mids_d3_base_quotient},
+        {"highs_d1_base_quotient", &highs_d1_base_quotient},
+        {"highs_d2_base_quotient", &highs_d2_base_quotient},
+        {"highs_d3_base_quotient", &highs_d3_base_quotient},
+        {"harmonics_d1_quotient", &harmonics_d1_quotient},
+        {"harmonics_d2_quotient", &harmonics_d2_quotient},
+        {"harmonics_d3_quotient", &harmonics_d3_quotient},
+
+
     };
 
     float bass_start = 0.0f;
@@ -60,6 +89,10 @@ struct FBDGM : VisualizationAlgorithm{
     float highs_d2 = 12000.0f;
     float highs_d3 = 22000.0f;
 
+    float harmonics_d1 = 300.0f;
+    float harmonics_d2 = 2000.0f;
+    float harmonics_d3 = 12000.0f;
+    float harmonics_end = 22000.0f;
 
     float bass_d1_base_quotient = 7.0f;
     float bass_d2_base_quotient = 9.0f;
@@ -76,13 +109,6 @@ struct FBDGM : VisualizationAlgorithm{
     float harmonics_d1_quotient = 4.0f;
     float harmonics_d2_quotient = 4.0f;
     float harmonics_d3_quotient = 1.5f;
-
-
-    float harmonics_d1 = 300.0f;
-    float harmonics_d2 = 2000.0f;
-    float harmonics_d3 = 12000.0f;
-    float harmonics_end = 22000.0f;
-    float harmonics_quotient = 6.0f;
 
 
     float bass_d1_quotient;

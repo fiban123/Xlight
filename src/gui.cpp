@@ -112,6 +112,33 @@ void GUI::loop() {
             }
 
         }
+
+        if (state.draw_info){
+            // FFT size, Frames per buffer, sample rate, FFT FPS, unique FFT FPS
+            vector<string> settings;
+
+            settings = {
+                "Frames per FFT: " + to_string(stream.frames_per_fft),
+                "Frames per buffer: " + to_string(stream.frames_per_buffer),
+                "sample rate: " + to_string(stream.sample_rate),
+                "FFT FPS: " + to_string(stream.sample_rate / stream.frames_per_buffer),
+                "unique FFT FPS: " + to_string(stream.sample_rate / stream.frames_per_fft),
+            };
+
+            for (size_t i = 0; i < settings.size(); i++){
+                string s = settings[i];
+                sf::Font font;
+                font.loadFromFile("C:/users/Fabia/AppData/local/microsoft/windows/fonts/jetbrainsmono-thin.ttf");
+
+                sf::Text text;
+                text.setFont(font);
+                text.setCharacterSize(14);
+                text.setFillColor(sf::Color::White);
+                text.setPosition(200.0f, 70 + i * 20);
+                text.setString(s);
+                window.draw(text);
+            }
+        }
         
 
         window.display();

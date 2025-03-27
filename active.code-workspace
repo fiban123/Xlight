@@ -23,7 +23,8 @@
 			"istream": "cpp",
 			"sstream": "cpp",
 			"functional": "cpp",
-			"random": "cpp"
+			"random": "cpp",
+			"streambuf": "cpp"
 		},
 		"git.useForcePushIfIncludes": false
 	}

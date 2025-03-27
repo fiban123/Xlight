@@ -15,6 +15,7 @@ using namespace std;
 struct guiStates{
     bool draw_spectrogram = true;
     bool draw_light_preview = true;
+    bool draw_info = true;
 };
 
 
