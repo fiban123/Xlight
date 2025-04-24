@@ -1,5 +1,7 @@
 #include "../include/gui.hpp"
 
+sf::Font font;
+
 void GUI::init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t frames_per_buffer, size_t frames_per_fft, PaDeviceIndex device, size_t spectrogram_factor_update_rate,
                function<void(float*)> spectrogram_factor_update_func, Algo _algo) {
 
@@ -21,6 +23,23 @@ void GUI::init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t fr
     }
 
     algo->init();
+
+    font.loadFromFile("C:/users/Fabia/AppData/local/microsoft/windows/fonts/jetbrainsmono-thin.ttf");
+
+    vector<int> x_marker_values = {0, 100, 1000, 4500, 10000};
+    int text_size = 14;
+    float marker_len = 20.0f;
+
+    for (size_t i = 0; i < x_marker_values.size(); i++){
+        int freq = x_marker_values[i];
+        float log_freq = nmap(powf(freq, 0.6f), 0.0f, powf(stream.sample_rate / 2, 0.6f), 0.0f, stream.sample_rate / 2);
+
+        string text = to_string(freq) + " hz";
+
+        spectrogram_graph.x_markers.emplace_back(log_freq, marker_len, text_size, text);
+    }
+
+    spectrogram_graph.add_markers();
 }
 
 // start the GUI
@@ -92,7 +111,7 @@ void GUI::loop() {
             }
             
             spectrogram_graph.add_bars(spectrogram_points, 0.0f);
-    
+
             spectrogram_graph.draw(window);
         }
 
@@ -127,8 +146,6 @@ void GUI::loop() {
 
             for (size_t i = 0; i < settings.size(); i++){
                 string s = settings[i];
-                sf::Font font;
-                font.loadFromFile("C:/users/Fabia/AppData/local/microsoft/windows/fonts/jetbrainsmono-thin.ttf");
 
                 sf::Text text;
                 text.setFont(font);
@@ -202,7 +219,37 @@ void Graph::add_bars(const vector<sf::Vector2f>& points, float neutral = 0.0f) {
     }
 }
 
+void Graph::add_markers() {
+    marker_vertices = sf::VertexArray(sf::Lines, x_markers.size() * 2);
+
+
+    for (size_t i = 0; i < x_markers.size(); i++) {
+        Marker& m = x_markers[i];
+        float x = nmap(m.c, min_x, max_x, pos.x, pos.x + width);
+        float y = pos.y + height;
+
+        float y2 = y + m.len;
+
+
+        marker_vertices[i * 2] = sf::Vector2f(x, y);
+        marker_vertices[i * 2 + 1] = sf::Vector2f(x, y2);
+
+
+        m.rtext.setFont(font);
+        m.rtext.setCharacterSize(m.text_size);
+        m.rtext.setFillColor(sf::Color::White);
+        m.rtext.setPosition(x, y2);
+        m.rtext.setString(m.text);
+    }
+}
+
 void Graph::draw(sf::RenderWindow& window) {
     window.draw(bounding_vertices);
+    window.draw(marker_vertices);
+
+    for (const Marker& m : x_markers){
+        window.draw(m.rtext);
+    }
+
     window.draw(vertices);
 }

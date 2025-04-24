@@ -34,6 +34,8 @@ using namespace std;
 
 class Xlight{
     public:
+
+        Xlight(bool init = true) : dmx(init){}
         // GUI
         GUI gui; // must be initialized before starting
 

@@ -15,7 +15,7 @@ using namespace std;
 
 class FT232R{
     public:
-    FT232R();
+    FT232R(bool init);
     
     inline void busy_wait(unsigned long int ns);
     
@@ -31,6 +31,8 @@ class FT232R{
 class DMXInterface{
     public:
         FT232R serial_ifc;
+
+        DMXInterface(bool init = true) : serial_ifc(init){}
 
         bool running = false;
 

@@ -18,6 +18,14 @@ struct guiStates{
     bool draw_info = true;
 };
 
+struct Marker{
+    float c;
+    float len;
+    int text_size;
+    string text;
+
+    sf::Text rtext;
+};
 
 struct Graph{
     sf::Vector2f pos;
@@ -29,11 +37,16 @@ struct Graph{
     sf::VertexArray vertices;
     sf::VertexArray bounding_vertices;
 
+    sf::VertexArray marker_vertices;
+    vector<Marker> x_markers;
+
     void init(sf::Vector2f pos, float width, float height, float min_x, float max_x, float min_y, float max_y);
 
     void add_linear_spline(const vector<sf::Vector2f>& points);
 
     void add_bars(const vector<sf::Vector2f>& points, float neutral);
+
+    void add_markers();
 
     void draw(sf::RenderWindow& window);
 };

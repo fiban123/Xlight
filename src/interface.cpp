@@ -43,6 +43,16 @@ void TerminalInterface::interface_loop() {
                 algo->change_setting(parsed[1], new_value);
             }
         }
+
+        else{
+            if (parsed[0] == "algosettings"){
+                map<string, float*> setting_map = algo->get_setting_map();
+
+                for (const auto& [name, ptr] : setting_map){
+                    cout << name << ": " << *ptr << endl;
+                }
+            }
+        }
     }
 }
 

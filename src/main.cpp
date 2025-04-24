@@ -27,14 +27,14 @@ void spectrogram_factor_update_func(float* value){
 int main(){
     Pa_Initialize();
 
-    Xlight xlight;
+    Xlight xlight(false);
 
     //xlight.gui.stream.init(128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func); 
 
     xlight.gui.init(240, sf::VideoMode::getDesktopMode(), 1000, 128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func, 
     ALGO_FBDGM);
 
-    xlight.dmx.channels = &xlight.gui.channels;
+    //xlight.dmx.channels = &xlight.gui.channels;
     
     xlight.interface.init(xlight.gui.algo.get());
 
@@ -42,11 +42,11 @@ int main(){
     xlight.gui.stream.start();
 
     xlight.gui.start();
-    xlight.dmx.start();
+    //xlight.dmx.start();
     xlight.interface.start();
 
     xlight.gui.wait_for_exit();
-    xlight.dmx.stop();
+    //xlight.dmx.stop();
 
     return 0;
 }

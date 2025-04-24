@@ -19,11 +19,14 @@ struct VisualizationAlgorithm{ // abstract struct
     virtual void init() = 0;
 
     virtual void change_setting(string setting, float new_value) = 0;
+    virtual map<string, float*>& get_setting_map() = 0;
     // helpers
     
     inline float get_division_sum(float center, float in_len, float out_len);
     
     inline float get_freq_bin(float freq);
+
+    float master_multiplier = 1.0f;
 
 
     float& sample_ratio;
@@ -43,7 +46,11 @@ struct FBDGM : VisualizationAlgorithm{
     void init();
 
     void change_setting(string setting, float new_value);
+
+    map<string, float*>& get_setting_map(){return setting_map;}
+    
     map<string, float*> setting_map = {
+        {"master_multiplier", &master_multiplier},
         {"bass_start", &bass_start},
         {"bass_d1", &bass_d1},
         {"bass_d2", &bass_d2},

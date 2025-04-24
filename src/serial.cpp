@@ -1,6 +1,10 @@
 #include "../include/serial.hpp"
 
-FT232R::FT232R() {
+FT232R::FT232R(bool init = true) {
+
+    if (!init){
+        return;
+    }
     cout << "initializing FTDI serrial communication" << endl;
 
     ctx = ftdi_new();
@@ -8,6 +12,7 @@ FT232R::FT232R() {
     assert(ctx); 
 
     int ret = ftdi_usb_open(ctx, 0x0403, 0x6001);
+    cout << "FTDI device not found" << endl;
     if (ret < 0) {
         string err = ftdi_get_error_string(ctx);
         ftdi_free(ctx);

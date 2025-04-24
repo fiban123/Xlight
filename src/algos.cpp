@@ -28,27 +28,27 @@ void FBDGM::execute() {
         float mids_d2_sum = get_division_sum(mids_d2, mids_d2_in_len, mids_d2_out_len);
         float mids_d3_sum = get_division_sum(mids_d3, mids_d3_in_len, mids_d3_out_len);
     
-        channels[1].r = (uint8_t)clamp(mids_d1_sum / mids_d1_quotient, 0.0f, 255.0f);
-        channels[1].g = (uint8_t)clamp(mids_d2_sum / mids_d2_quotient, 0.0f, 255.0f);
-        channels[1].b = (uint8_t)clamp(mids_d3_sum / mids_d3_quotient, 0.0f, 255.0f);
+        channels[1].r = (uint8_t)clamp(mids_d1_sum / mids_d1_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[1].g = (uint8_t)clamp(mids_d2_sum / mids_d2_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[1].b = (uint8_t)clamp(mids_d3_sum / mids_d3_quotient, 0.0f, 255.0f) * master_multiplier;
     
         // highs (channel 2)
         float highs_d1_sum = get_division_sum(highs_d1, highs_d1_in_len, highs_d1_out_len);
         float highs_d2_sum = get_division_sum(highs_d2, highs_d2_in_len, highs_d2_out_len);
         float highs_d3_sum = get_division_sum(highs_d3, highs_d3_in_len, highs_d3_out_len);
 
-        channels[2].r = (uint8_t)clamp(highs_d1_sum / highs_d1_quotient, 0.0f, 255.0f);
-        channels[2].g = (uint8_t)clamp(highs_d2_sum / highs_d2_quotient, 0.0f, 255.0f);
-        channels[2].b = (uint8_t)clamp(highs_d3_sum / highs_d3_quotient, 0.0f, 255.0f);
+        channels[2].r = (uint8_t)clamp(highs_d1_sum / highs_d1_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[2].g = (uint8_t)clamp(highs_d2_sum / highs_d2_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[2].b = (uint8_t)clamp(highs_d3_sum / highs_d3_quotient, 0.0f, 255.0f) * master_multiplier;
     
         // bass (C0)
         float bass_d1_sum = get_division_sum(bass_d1, bass_d1_in_len, bass_d1_out_len);
         float bass_d2_sum = get_division_sum(bass_d2, bass_d2_in_len, bass_d2_out_len);
         float bass_d3_sum = get_division_sum(bass_d3, bass_d3_in_len, bass_d3_out_len);
 
-        channels[0].r = (uint8_t)clamp(bass_d1_sum / bass_d1_quotient, 0.0f, 255.0f);
-        channels[0].g = (uint8_t)clamp(bass_d2_sum / bass_d2_quotient, 0.0f, 255.0f);
-        channels[0].b = (uint8_t)clamp(bass_d3_sum / bass_d3_quotient, 0.0f, 255.0f);
+        channels[0].r = (uint8_t) clamp(bass_d1_sum / bass_d1_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[0].g = (uint8_t) clamp(bass_d2_sum / bass_d2_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[0].b = (uint8_t) clamp(bass_d3_sum / bass_d3_quotient, 0.0f, 255.0f) * master_multiplier;
     
         // peakiness / harmonics (C3)
     
@@ -90,9 +90,9 @@ void FBDGM::execute() {
         }
     
         // 1'
-        channels[3].r = (uint8_t)clamp(harmonics_d1_sum / harmonics_d1_quotient, 0.0f, 255.0f);
-        channels[3].g = (uint8_t)clamp(harmonics_d2_sum / harmonics_d2_quotient, 0.0f, 255.0f);
-        channels[3].b = (uint8_t)clamp(harmonics_d3_sum / harmonics_d3_quotient, 0.0f, 255.0f);
+        channels[3].r = (uint8_t)clamp(harmonics_d1_sum / harmonics_d1_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[3].g = (uint8_t)clamp(harmonics_d2_sum / harmonics_d2_quotient, 0.0f, 255.0f) * master_multiplier;
+        channels[3].b = (uint8_t)clamp(harmonics_d3_sum / harmonics_d3_quotient, 0.0f, 255.0f) * master_multiplier;
 }
 
 void FBDGM::init() {

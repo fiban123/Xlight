@@ -19,6 +19,7 @@ void AudioStream::init(size_t _frames_per_buffer, size_t _frames_per_fft, PaDevi
     sample_ratio = sample_rate / (float) frames_per_fft;
     latency = device_info->defaultLowInputLatency;
 
+
     cout << "initializing audio stream with device " << input_device << ", sample rate " << sample_rate << ", latency " << latency << endl;
 
     in_params.channelCount = 1;
