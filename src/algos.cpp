@@ -22,7 +22,7 @@ VisualizationAlgorithm::VisualizationAlgorithm(float& sample_ratio, array<sf::Co
 : sample_ratio(sample_ratio), channels(channels), spectrogram(spectrogram) {}
 
 
-void FBDGM::execute() {
+void FBGM::execute() {
         // mids (channel 1)
         float mids_d1_sum = get_division_sum(mids_d1, mids_d1_in_len, mids_d1_out_len);
         float mids_d2_sum = get_division_sum(mids_d2, mids_d2_in_len, mids_d2_out_len);
@@ -95,7 +95,7 @@ void FBDGM::execute() {
         channels[3].b = (uint8_t)clamp(harmonics_d3_sum / harmonics_d3_quotient, 0.0f, 255.0f) * master_multiplier;
 }
 
-void FBDGM::init() {
+void FBGM::init() {
     bass_d1_quotient = bass_d1_base_quotient;
     bass_d2_quotient = bass_d2_base_quotient;
     bass_d3_quotient = bass_d3_base_quotient;
@@ -138,7 +138,7 @@ void FBDGM::init() {
     harmonics_d3_out_len = (harmonics_end - harmonics_d3);
 }
 
-void FBDGM::change_setting(string setting, float new_value) {
+void FBGM::change_setting(string setting, float new_value) {
     const auto it = setting_map.find(setting);
     if (it != setting_map.end()) {
         *(it->second) = new_value;

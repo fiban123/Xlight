@@ -38,7 +38,7 @@ struct VisualizationAlgorithm{ // abstract struct
     VisualizationAlgorithm() = delete;
 };
 
-struct FBDGM : VisualizationAlgorithm{
+struct FBGM : VisualizationAlgorithm{
     using VisualizationAlgorithm::VisualizationAlgorithm;
 
     void execute();
@@ -160,5 +160,5 @@ struct FBDGM : VisualizationAlgorithm{
 };
 
 enum Algo{
-    ALGO_FBDGM,
+    ALGO_FBGM,
 };

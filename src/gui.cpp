@@ -14,8 +14,8 @@ void GUI::init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t fr
     spectrogram_graph.init({50, 50}, _mode.width - 100, _mode.height - 100, 0, stream.sample_rate / 2, 0, max_magnitude);
 
     switch (_algo){
-        case ALGO_FBDGM:
-            algo = make_unique<FBDGM>(stream.sample_ratio, channels, stream.spectrogram);
+        case ALGO_FBGM:
+            algo = make_unique<FBGM>(stream.sample_ratio, channels, stream.spectrogram);
             break;
         default:
             cout << "Unknown algorithm";
