@@ -78,6 +78,7 @@ void FT232R::write_dmx_frame(vector<unsigned char> data) {
 }
 
 FT232R::~FT232R() {
+    
     if (ctx) {
         cout << "Closing FTDI device." << std::endl;
         int ret = ftdi_usb_close(ctx);

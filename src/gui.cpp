@@ -24,7 +24,11 @@ void GUI::init(size_t _fps, sf::VideoMode _mode, float _max_magnitude, size_t fr
 
     algo->init();
 
+    #ifdef PC
     font.loadFromFile("C:/users/Fabia/AppData/local/microsoft/windows/fonts/jetbrainsmono-thin.ttf");
+    #else
+    font.loadFromFile("C:/Users/qdnsf/AppData/Local/Microsoft/Windows/Fonts/JetBrainsMono-Regular.ttf");
+    #endif
 
     vector<int> x_marker_values = {0, 100, 1000, 4500, 10000};
     int text_size = 14;
