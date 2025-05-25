@@ -24,17 +24,22 @@ void spectrogram_factor_update_func(float* value){
     *value = volume_factor_table.at(rounded_sysvolume);
 }
 
+void linear_spectrogram_factor_update_func(float* value){
+    float sysvolume = get_system_volume();
+    *value = sysvolume;
+}
+
 int main(){
     Pa_Initialize();
 
-    Xlight xlight(false);
+    Xlight xlight(true);
 
     //xlight.gui.stream.init(128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func); 
 
-    xlight.gui.init(240, sf::VideoMode::getDesktopMode(), 1000, 128, 2048, xlight.gui.stream.default_input_device(), 10, spectrogram_factor_update_func, 
+    xlight.gui.init(240, sf::VideoMode::getDesktopMode(), 1000, 128, 2048, xlight.gui.stream.default_input_device(), 10, linear_spectrogram_factor_update_func, 
     ALGO_FBGM);
 
-    //xlight.dmx.channels = &xlight.gui.channels;
+    xlight.dmx.channels = &xlight.gui.channels;
     
     xlight.interface.init(xlight.gui.algo.get());
 
@@ -42,11 +47,11 @@ int main(){
     xlight.gui.stream.start();
 
     xlight.gui.start();
-    //xlight.dmx.start();
+    xlight.dmx.start();
     xlight.interface.start();
 
     xlight.gui.wait_for_exit();
-    //xlight.dmx.stop();
+    xlight.dmx.stop();
 
     return 0;
 }

@@ -119,13 +119,14 @@ void DMXInterface::loop() {
         frame[3 * 4 + 1] = channels->at(3).g;
         frame[3 * 4 + 2] = channels->at(3).b;
         frame[3 * 4 + 3] = clamp(frame[3*4] + frame[3*4 + 1] + frame[3*4 + 2], 0, 255);
+        //
         cout << endl;
 
         //frame = {255, 0, 0, 0,   0, 255, 0, 0,   0, 0, 255, 0,   0, 0, 0, 255};
 
-        for (int i = 0; i < 4*4; i++){
-            cout << setw(3) << (int) frame[i] << " ";
-        }
+        //for (int i = 0; i < 4*4; i++){
+            //cout << setw(3) << (int) frame[i] << " ";
+        //}
 
         //frame = {0, 0, 0, 0};
         serial_ifc.write_dmx_frame(frame);

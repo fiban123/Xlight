@@ -121,9 +121,9 @@ int AudioStream::stream_callback(const void* _input_buf, void* output_buf, unsig
     }
     
     instance->spectrogram[instance->frames_per_fft / 2 - 1] = fabs(instance->fft_out_buf[instance->frames_per_fft / 2 - 1]); // nyquist frequency
-    
     /*
-    float max_waveform = vecmax(instance->fft_in_buf);
+    
+    float max_waveform = *max_element(instance->fft_in_buf, instance->fft_in_buf + frames_per_buffer);
     if (volume_factor_map.find(instance->spectrogram_factor) == volume_factor_map.end()){
         volume_factor_map.insert({instance->spectrogram_factor, deque<float>()});
     }
@@ -134,12 +134,13 @@ int AudioStream::stream_callback(const void* _input_buf, void* output_buf, unsig
         }
         cout << volume_factor_map[instance->spectrogram_factor].size() << endl;
     }
- 
+
+    cout << instance->spectrogram_factor << endl;
     cout << volume_factor_map.size() << endl;
-    */
+    cout << max_waveform << endl; 
 
-    // calculate spectrogram derivative
-
+    cout << endl;*/
+    
 
     return 0;
 }
@@ -152,6 +153,11 @@ AudioStream::~AudioStream() {
         cout << "closing audio stream of device" << input_device << endl;
         Pa_AbortStream(stream);
     }
+
+    /*
+    for (auto& [vol, deque] : volume_factor_map){
+        cout << vol << " " << dequeavg(deque) << endl;
+    }*/
 
     fftwf_free(fft_in_buf);
     fftwf_free(fft_out_buf);

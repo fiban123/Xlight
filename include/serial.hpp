@@ -13,6 +13,7 @@ using namespace std;
 
 
 
+
 class FT232R{
     public:
     FT232R(bool init);
