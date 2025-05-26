@@ -82,7 +82,7 @@ void FBGM::execute() {
     
             float diff = local_avg_magnitude - spectrogram[i];
 
-            float harmonic_magnitude = max(0.0f, diff - 15.0f);
+            float harmonic_magnitude = max(0.0f, diff - 7.5f); // 15
     
             harmonics_d1_sum += harmonic_magnitude * clerp2(harmonics_d1 - harmonics_d1_in_len, harmonics_d1, harmonics_d1, harmonics_d1 + harmonics_d1_out_len, freq);
             harmonics_d2_sum += harmonic_magnitude * clerp2(harmonics_d2 - harmonics_d2_in_len, harmonics_d2, harmonics_d2, harmonics_d2 + harmonics_d2_out_len, freq);

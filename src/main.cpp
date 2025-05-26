@@ -4,7 +4,6 @@
 
 #include <map>
 
-//#define PC
 
 #ifdef PC
 unordered_map<unsigned short int, float> volume_factor_table = {

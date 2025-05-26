@@ -113,7 +113,7 @@ struct FBGM : VisualizationAlgorithm{
     float highs_d2_base_quotient = highs_d1_base_quotient;
     float highs_d3_base_quotient = highs_d1_base_quotient;
 
-    float harmonics_d1_quotient = 4.0f;
+    float harmonics_d1_quotient = 2.0f; // 4
     float harmonics_d2_quotient = 4.0f;
     float harmonics_d3_quotient = 1.5f;
 
