@@ -18,7 +18,7 @@ using namespace std;
 
 #define CHECKERR(err) if (err != paNoError){ cout << "PA error: " << Pa_GetErrorText(err) << endl; exit(1);}
 
-map<float, deque<float> > volume_factor_map;
+//map<float, deque<float> > volume_factor_map;
 
 struct AudioStream{
     bool initialized = false;

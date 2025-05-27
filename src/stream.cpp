@@ -155,11 +155,6 @@ AudioStream::~AudioStream() {
         Pa_AbortStream(stream);
     }
 
-    
-    for (auto& [vol, deque] : volume_factor_map){
-        cout << vol << " " << dequeavg(deque) << endl;
-    }
-
     fftwf_free(fft_in_buf);
     fftwf_free(fft_out_buf);
     fftwf_destroy_plan(fft_plan);

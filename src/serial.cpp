@@ -121,7 +121,7 @@ void DMXInterface::loop() {
         frame[3 * 4 + 2] = channels->at(3).b;
         frame[3 * 4 + 3] = clamp(frame[3*4] + frame[3*4 + 1] + frame[3*4 + 2], 0, 255);
         //
-        cout << endl;
+        //cout << endl;
 
         //frame = {255, 0, 0, 0,   0, 255, 0, 0,   0, 0, 255, 0,   0, 0, 0, 255};
 
